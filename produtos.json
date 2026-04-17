@@ -1,7 +1,18 @@
+
 [
   {
-    "nome": "Produto Teste",
-    "imagem": "imagens_site/padrao.jpg",
-    "link": "https://shopee.com.br"
+    "nome": "Mini Escova Elétrica Facial",
+    "imagem": "https://via.placeholder.com/300",
+    "link": "https://seulinkafiliado1.com"
+  },
+  {
+    "nome": "Smartwatch Fitness Completo",
+    "imagem": "https://via.placeholder.com/300",
+    "link": "https://seulinkafiliado2.com"
+  },
+  {
+    "nome": "Fone Bluetooth Sem Fio Premium",
+    "imagem": "https://via.placeholder.com/300",
+    "link": "https://seulinkafiliado3.com"
   }
 ]
