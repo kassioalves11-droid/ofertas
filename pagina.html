@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔥 OFERTAS DO DIA</title>
+
+<style>
+body {
+    font-family: Arial;
+    background: #0f0f0f;
+    color: white;
+    text-align: center;
+}
+
+h1 {
+    color: yellow;
+}
+
+.timer {
+    color: red;
+    font-size: 18px;
+}
+
+.produto {
+    background: #1a1a1a;
+    margin: 15px;
+    padding: 15px;
+    border-radius: 12px;
+}
+
+.destaque {
+    border: 2px solid yellow;
+    transform: scale(1.05);
+}
+
+img {
+    width: 100%;
+    max-width: 300px;
+    border-radius: 10px;
+}
+
+.botao {
+    display: inline-block;
+    background: red;
+    color: white;
+    padding: 12px 25px;
+    margin-top: 10px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+    cursor: pointer;
+    animation: piscar 1s infinite;
+}
+
+@keyframes piscar {
+    0% {opacity: 1;}
+    50% {opacity: 0.6;}
+    100% {opacity: 1;}
+}
+
+.urgencia {
+    color: red;
+    font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🔥 OFERTAS QUE ESTÃO ESGOTANDO 🔥</h1>
+<div class="timer" id="timer"></div>
+
+<div id="produtos"></div>
+
+<script>
+
+// ================= TIMER =================
+let tempo = 600;
+
+function atualizarTimer() {
+    let min = Math.floor(tempo / 60);
+    let seg = tempo % 60;
+
+    document.getElementById("timer").innerText =
+        "⚠️ Promoção acaba em: " +
+        min + ":" + (seg < 10 ? "0" + seg : seg);
+
+    tempo--;
+    if (tempo >= 0) setTimeout(atualizarTimer, 1000);
+}
+
+atualizarTimer();
+
+// ================= PRODUTOS =================
+fetch('produtos.json')
+.then(res => res.json())
+.then(data => {
+
+    let html = "";
+
+    data.forEach((p, i) => {
+
+        let destaque = i === 0 ? "produto destaque" : "produto";
+
+        html += `
+        <div class="${destaque}">
+            <h2>${p.nome}</h2>
+            <img src="${p.imagem}">
+            <p class="urgencia">🔥 Estoque acabando!</p>
+
+            <a class="botao" href="${p.link}" target="_blank">
+                COMPRAR AGORA
+            </a>
+
+            <br><br>
+
+            <button onclick="copiarLink('${p.link}')" class="botao">
+                COPIAR LINK 🔗
+            </button>
+        </div>
+        `;
+    });
+
+    document.getElementById("produtos").innerHTML = html;
+});
+
+// ================= COPIAR =================
+function copiarLink(link) {
+    navigator.clipboard.writeText(link);
+    alert("Link copiado! 🚀");
+}
+
+</script>
+
+</body>
+</html>
