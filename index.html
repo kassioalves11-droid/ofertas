@@ -2,27 +2,36 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Ofertas 🔥</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔥 Achadinhos do Dia</title>
 
 <style>
 body {
-    font-family: Arial;
+    font-family: Arial, sans-serif;
     background: #111;
     color: white;
     text-align: center;
+    margin: 0;
+    padding: 0;
+}
+
+h1 {
+    margin-top: 20px;
 }
 
 .container {
-    margin-top: 30px;
+    margin-top: 20px;
+    padding-bottom: 30px;
 }
 
 .card {
     background: #222;
     margin: 15px auto;
     padding: 15px;
-    border-radius: 10px;
+    border-radius: 12px;
     width: 90%;
     max-width: 400px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
 }
 
 .card img {
@@ -30,15 +39,25 @@ body {
     border-radius: 10px;
 }
 
+.card h3 {
+    font-size: 18px;
+    margin: 10px 0;
+}
+
 .card a {
     display: block;
     margin-top: 10px;
-    padding: 10px;
+    padding: 12px;
     background: #ff6600;
     color: white;
     text-decoration: none;
     border-radius: 8px;
     font-weight: bold;
+    transition: 0.3s;
+}
+
+.card a:hover {
+    background: #ff8533;
 }
 </style>
 </head>
@@ -47,32 +66,37 @@ body {
 
 <h1>🔥 Achadinhos do Dia</h1>
 
+<p style="color:red; font-weight:bold;">
+🚨 Ofertas atualizadas hoje - pode acabar rápido!
+</p>
+
 <div class="container" id="produtos"></div>
 
 <script>
 fetch("produtos.json")
-  .then(res => res.json())
+  .then(response => response.json())
   .then(data => {
 
     const container = document.getElementById("produtos");
 
-    data.forEach(p => {
+    data.forEach(produto => {
 
       const card = document.createElement("div");
       card.className = "card";
 
       card.innerHTML = `
-        <img src="${p.imagem}">
-        <h3>${p.titulo}</h3>
-        <a href="${p.link}" target="_blank">🛒 Comprar</a>
+        <img src="${produto.imagem}" alt="produto">
+        <h3>${produto.nome}</h3>
+        <a href="${produto.link}" target="_blank">🛒 Comprar agora</a>
       `;
 
       container.appendChild(card);
     });
 
   })
-  .catch(err => {
-    console.error("Erro ao carregar produtos:", err);
+  .catch(error => {
+    console.error("Erro ao carregar JSON:", error);
+    document.getElementById("produtos").innerHTML = "<p>❌ Erro ao carregar produtos</p>";
   });
 </script>
 
