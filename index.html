@@ -1,78 +1,36 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🔥 Achadinhos do Dia</title>
+<script type="module">
 
-<style>
-body {
-    font-family: Arial;
-    background: #111;
-    color: white;
-    text-align: center;
-}
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-.container {
-    margin-top: 20px;
-}
+// SUA CONFIG (já está correta)
+const firebaseConfig = {
+  apiKey: "AIzaSyCjgVssbAJEK48Ut7P4rBJtIxoS9z7YO-o",
+  authDomain: "ofertas-6b180.firebaseapp.com",
+  projectId: "ofertas-6b180",
+  storageBucket: "ofertas-6b180.firebasestorage.app",
+  messagingSenderId: "908317193730",
+  appId: "1:908317193730:web:e87f9e0d2b638063c7191b",
+  measurementId: "G-5JE5C8CQ6J"
+};
 
-.card {
-    background: #222;
-    margin: 15px auto;
-    padding: 15px;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 400px;
-}
+// iniciar firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-.card img {
-    width: 100%;
-    border-radius: 10px;
-}
-
-.botao {
-    display: block;
-    margin-top: 10px;
-    padding: 14px;
-    background: #ff6600;
-    color: white;
-    text-decoration: none;
-    border-radius: 8px;
-    font-weight: bold;
-    animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-}
-</style>
-</head>
-
-<body>
-
-<h1>🔥 Achadinhos do Dia</h1>
-<p>🚨 Ofertas limitadas</p>
-
-<div class="container" id="produtos"></div>
-
-<script>
-let clicks = JSON.parse(localStorage.getItem("clicks")) || {};
-
+// carregar produtos
 fetch("produtos.json")
   .then(res => res.json())
-  .then(data => {
-
-    // ordenar por cliques
-    data.sort((a, b) => (clicks[b.nome] || 0) - (clicks[a.nome] || 0));
+  .then(async data => {
 
     const container = document.getElementById("produtos");
 
-    data.forEach(produto => {
+    for (let produto of data) {
 
-      const count = clicks[produto.nome] || 0;
+      const ref = doc(db, "cliques", produto.nome);
+      const snap = await getDoc(ref);
+
+      let count = snap.exists() ? snap.data().count : 0;
 
       const card = document.createElement("div");
       card.className = "card";
@@ -80,21 +38,20 @@ fetch("produtos.json")
       card.innerHTML = `
         <img src="${produto.imagem}">
         <h3>${produto.nome}</h3>
-        <p>👆 ${count} pessoas já clicaram</p>
-        <a class="botao" href="${produto.link}" target="_blank">🔥 COMPRAR AGORA</a>
+        <p>👆 ${count} cliques</p>
+        <a class="botao" href="${produto.link}" target="_blank">
+        🔥 COMPRAR COM DESCONTO
+        </a>
       `;
 
-      // evento de clique
-      card.querySelector("a").addEventListener("click", () => {
-        clicks[produto.nome] = (clicks[produto.nome] || 0) + 1;
-        localStorage.setItem("clicks", JSON.stringify(clicks));
+      // clique salva no firebase
+      card.querySelector("a").addEventListener("click", async () => {
+        await setDoc(ref, { count: count + 1 });
       });
 
       container.appendChild(card);
-    });
+    }
 
   });
-</script>
 
-</body>
-</html>
+</script>
