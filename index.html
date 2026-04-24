@@ -47,7 +47,7 @@ h1 {
 }
 
 .card:hover {
-    transform: scale(1.02);
+    transform: scale(1.03);
 }
 
 .card img {
@@ -60,13 +60,85 @@ h1 {
     margin: 10px 0;
 }
 
-.preco {
+/* URGÊNCIA */
+.urgencia {
     color: #00ff99;
     font-weight: bold;
 }
 
+/* BOTÃO */
 .botao {
     display: block;
     margin-top: 12px;
     padding: 14px;
-    background
+    background: #ff6600;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: bold;
+    animation: pulse 1.5s infinite;
+}
+
+/* ANIMAÇÃO */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+</style>
+</head>
+
+<body>
+
+<h1>🔥 Achadinhos do Dia</h1>
+
+<p class="sub">😳 Produtos que estão viralizando agora</p>
+
+<p class="alerta">
+🚨 Ofertas atualizadas hoje - pode acabar rápido!
+</p>
+
+<div class="container" id="produtos"></div>
+
+<script>
+fetch("produtos.json")
+  .then(response => response.json())
+  .then(data => {
+
+    const container = document.getElementById("produtos");
+
+    data.forEach(produto => {
+
+      const pessoas = Math.floor(Math.random() * 40) + 10;
+
+      const card = document.createElement("div");
+      card.className = "card";
+
+      card.innerHTML = `
+        <img src="${produto.imagem}" alt="produto">
+
+        <h3>${produto.nome}</h3>
+
+        <p class="urgencia">💸 Oferta limitada</p>
+
+        <p style="font-size:14px;">
+        👀 ${pessoas} pessoas vendo agora
+        </p>
+
+        <a class="botao" href="${produto.link}" target="_blank">
+        🔥 COMPRAR COM DESCONTO
+        </a>
+      `;
+
+      container.appendChild(card);
+    });
+
+  })
+  .catch(error => {
+    console.error("Erro ao carregar JSON:", error);
+    document.getElementById("produtos").innerHTML = "<p>❌ Erro ao carregar produtos</p>";
+  });
+</script>
+
+</body>
+</html>
