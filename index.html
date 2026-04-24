@@ -1,57 +1,26 @@
-<script type="module">
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Teste</title>
+</head>
+<body>
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+<h1>TESTE OK</h1>
 
-// SUA CONFIG (já está correta)
-const firebaseConfig = {
-  apiKey: "AIzaSyCjgVssbAJEK48Ut7P4rBJtIxoS9z7YO-o",
-  authDomain: "ofertas-6b180.firebaseapp.com",
-  projectId: "ofertas-6b180",
-  storageBucket: "ofertas-6b180.firebasestorage.app",
-  messagingSenderId: "908317193730",
-  appId: "1:908317193730:web:e87f9e0d2b638063c7191b",
-  measurementId: "G-5JE5C8CQ6J"
-};
+<div id="produtos"></div>
 
-// iniciar firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-// carregar produtos
+<script>
 fetch("produtos.json")
-  .then(res => res.json())
-  .then(async data => {
-
-    const container = document.getElementById("produtos");
-
-    for (let produto of data) {
-
-      const ref = doc(db, "cliques", produto.nome);
-      const snap = await getDoc(ref);
-
-      let count = snap.exists() ? snap.data().count : 0;
-
-      const card = document.createElement("div");
-      card.className = "card";
-
-      card.innerHTML = `
-        <img src="${produto.imagem}">
-        <h3>${produto.nome}</h3>
-        <p>👆 ${count} cliques</p>
-        <a class="botao" href="${produto.link}" target="_blank">
-        🔥 COMPRAR COM DESCONTO
-        </a>
-      `;
-
-      // clique salva no firebase
-      card.querySelector("a").addEventListener("click", async () => {
-        await setDoc(ref, { count: count + 1 });
-      });
-
-      container.appendChild(card);
-    }
-
+  .then(r => r.json())
+  .then(data => {
+    document.getElementById("produtos").innerHTML = "JSON carregou 👍";
+  })
+  .catch(e => {
+    document.getElementById("produtos").innerHTML = "ERRO JSON ❌";
+    console.log(e);
   });
-
 </script>
+
+</body>
+</html>
