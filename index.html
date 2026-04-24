@@ -17,11 +17,22 @@ body {
 
 h1 {
     margin-top: 20px;
+    font-size: 26px;
+}
+
+.sub {
+    font-size: 18px;
+    margin: 10px;
+}
+
+.alerta {
+    color: red;
+    font-weight: bold;
 }
 
 .container {
     margin-top: 20px;
-    padding-bottom: 30px;
+    padding-bottom: 40px;
 }
 
 .card {
@@ -32,6 +43,11 @@ h1 {
     width: 90%;
     max-width: 400px;
     box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    transition: 0.3s;
+}
+
+.card:hover {
+    transform: scale(1.02);
 }
 
 .card img {
@@ -44,61 +60,13 @@ h1 {
     margin: 10px 0;
 }
 
-.card a {
-    display: block;
-    margin-top: 10px;
-    padding: 12px;
-    background: #ff6600;
-    color: white;
-    text-decoration: none;
-    border-radius: 8px;
+.preco {
+    color: #00ff99;
     font-weight: bold;
-    transition: 0.3s;
 }
 
-.card a:hover {
-    background: #ff8533;
-}
-</style>
-</head>
-
-<body>
-
-<h1>🔥 Achadinhos do Dia</h1>
-
-<p style="color:red; font-weight:bold;">
-🚨 Ofertas atualizadas hoje - pode acabar rápido!
-</p>
-
-<div class="container" id="produtos"></div>
-
-<script>
-fetch("produtos.json")
-  .then(response => response.json())
-  .then(data => {
-
-    const container = document.getElementById("produtos");
-
-    data.forEach(produto => {
-
-      const card = document.createElement("div");
-      card.className = "card";
-
-      card.innerHTML = `
-        <img src="${produto.imagem}" alt="produto">
-        <h3>${produto.nome}</h3>
-        <a href="${produto.link}" target="_blank">🛒 Comprar agora</a>
-      `;
-
-      container.appendChild(card);
-    });
-
-  })
-  .catch(error => {
-    console.error("Erro ao carregar JSON:", error);
-    document.getElementById("produtos").innerHTML = "<p>❌ Erro ao carregar produtos</p>";
-  });
-</script>
-
-</body>
-</html>
+.botao {
+    display: block;
+    margin-top: 12px;
+    padding: 14px;
+    background
