@@ -7,32 +7,14 @@
 
 <style>
 body {
-    font-family: Arial, sans-serif;
+    font-family: Arial;
     background: #111;
     color: white;
     text-align: center;
-    margin: 0;
-    padding: 0;
-}
-
-h1 {
-    margin-top: 20px;
-    font-size: 26px;
-}
-
-.sub {
-    font-size: 18px;
-    margin: 10px;
-}
-
-.alerta {
-    color: red;
-    font-weight: bold;
 }
 
 .container {
     margin-top: 20px;
-    padding-bottom: 40px;
 }
 
 .card {
@@ -42,12 +24,6 @@ h1 {
     border-radius: 12px;
     width: 90%;
     max-width: 400px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.5);
-    transition: 0.3s;
-}
-
-.card:hover {
-    transform: scale(1.03);
 }
 
 .card img {
@@ -55,21 +31,9 @@ h1 {
     border-radius: 10px;
 }
 
-.card h3 {
-    font-size: 18px;
-    margin: 10px 0;
-}
-
-/* URGÊNCIA */
-.urgencia {
-    color: #00ff99;
-    font-weight: bold;
-}
-
-/* BOTÃO */
 .botao {
     display: block;
-    margin-top: 12px;
+    margin-top: 10px;
     padding: 14px;
     background: #ff6600;
     color: white;
@@ -79,7 +43,6 @@ h1 {
     animation: pulse 1.5s infinite;
 }
 
-/* ANIMAÇÃO */
 @keyframes pulse {
     0% { transform: scale(1); }
     50% { transform: scale(1.05); }
@@ -91,52 +54,45 @@ h1 {
 <body>
 
 <h1>🔥 Achadinhos do Dia</h1>
-
-<p class="sub">😳 Produtos que estão viralizando agora</p>
-
-<p class="alerta">
-🚨 Ofertas atualizadas hoje - pode acabar rápido!
-</p>
+<p>🚨 Ofertas limitadas</p>
 
 <div class="container" id="produtos"></div>
 
 <script>
+let clicks = JSON.parse(localStorage.getItem("clicks")) || {};
+
 fetch("produtos.json")
-  .then(response => response.json())
+  .then(res => res.json())
   .then(data => {
+
+    // ordenar por cliques
+    data.sort((a, b) => (clicks[b.nome] || 0) - (clicks[a.nome] || 0));
 
     const container = document.getElementById("produtos");
 
     data.forEach(produto => {
 
-      const pessoas = Math.floor(Math.random() * 40) + 10;
+      const count = clicks[produto.nome] || 0;
 
       const card = document.createElement("div");
       card.className = "card";
 
       card.innerHTML = `
-        <img src="${produto.imagem}" alt="produto">
-
+        <img src="${produto.imagem}">
         <h3>${produto.nome}</h3>
-
-        <p class="urgencia">💸 Oferta limitada</p>
-
-        <p style="font-size:14px;">
-        👀 ${pessoas} pessoas vendo agora
-        </p>
-
-        <a class="botao" href="${produto.link}" target="_blank">
-        🔥 COMPRAR COM DESCONTO
-        </a>
+        <p>👆 ${count} pessoas já clicaram</p>
+        <a class="botao" href="${produto.link}" target="_blank">🔥 COMPRAR AGORA</a>
       `;
+
+      // evento de clique
+      card.querySelector("a").addEventListener("click", () => {
+        clicks[produto.nome] = (clicks[produto.nome] || 0) + 1;
+        localStorage.setItem("clicks", JSON.stringify(clicks));
+      });
 
       container.appendChild(card);
     });
 
-  })
-  .catch(error => {
-    console.error("Erro ao carregar JSON:", error);
-    document.getElementById("produtos").innerHTML = "<p>❌ Erro ao carregar produtos</p>";
   });
 </script>
 
