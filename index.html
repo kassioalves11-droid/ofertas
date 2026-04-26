@@ -27,6 +27,11 @@ body {
     border-radius: 10px;
 }
 
+.top {
+    border: 2px solid gold;
+    box-shadow: 0 0 10px gold;
+}
+
 .botao {
     display: block;
     margin-top: 10px;
@@ -49,7 +54,6 @@ body {
 
 <h1>🔥 Achadinhos do Dia</h1>
 
-<!-- 🔥 ESSA DIV É OBRIGATÓRIA -->
 <div id="produtos"></div>
 
 <!-- Firebase -->
@@ -60,7 +64,7 @@ body {
 
 document.addEventListener("DOMContentLoaded", function() {
 
-// CONFIG
+// CONFIG FIREBASE
 const firebaseConfig = {
   apiKey: "AIzaSyCjgVssbAJEK48Ut7P4rBJtIxoS9z7YO-o",
   authDomain: "ofertas-6b180.firebaseapp.com",
@@ -76,33 +80,55 @@ const container = document.getElementById("produtos");
 // carregar produtos
 fetch("produtos.json")
   .then(r => r.json())
-  .then(data => {
+  .then(async data => {
 
-    data.forEach(async produto => {
+    let lista = [];
+
+    for (let produto of data) {
 
       let count = 0;
 
       try {
-        const docRef = db.collection("cliques").doc(produto.nome);
-        const docSnap = await docRef.get();
+        const ref = db.collection("cliques").doc(produto.nome);
+        const snap = await ref.get();
 
-        if (docSnap.exists) {
-          count = docSnap.data().count;
+        if (snap.exists) {
+          count = snap.data().count;
         }
 
       } catch (e) {
         console.log("erro firebase:", e);
       }
 
+      lista.push({
+        ...produto,
+        count: count
+      });
+    }
+
+    // 🔥 ORDENAR PELO MAIS CLICADO
+    lista.sort((a, b) => b.count - a.count);
+
+    // renderizar
+    lista.forEach((produto, index) => {
+
       const card = document.createElement("div");
       card.className = "card";
+
+      // destaque no primeiro
+      if (index === 0) {
+        card.classList.add("top");
+      }
+
+      const destaque = index === 0 ? "🔥 MAIS VENDIDO" : "";
 
       card.innerHTML = `
         <img src="${produto.imagem}">
         <h3>${produto.nome}</h3>
-        <p>👆 ${count} cliques</p>
+        <p>${destaque}</p>
+        <p>👆 ${produto.count} cliques</p>
         <a class="botao" href="${produto.link}" target="_blank">
-        🔥 COMPRAR
+        🔥 COMPRAR AGORA
         </a>
       `;
 
@@ -110,7 +136,7 @@ fetch("produtos.json")
       card.querySelector("a").addEventListener("click", async () => {
         try {
           await db.collection("cliques").doc(produto.nome).set({
-            count: count + 1
+            count: produto.count + 1
           });
         } catch (e) {
           console.log("erro salvar:", e);
