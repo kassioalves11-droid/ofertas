@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -13,6 +14,8 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
   <style>
 
@@ -36,6 +39,7 @@
       padding:25px;
       border-radius:12px;
       box-shadow:0 0 15px rgba(0,0,0,0.4);
+      margin-top:40px;
     }
 
     h1{
@@ -79,7 +83,7 @@
       opacity:0.9;
     }
 
-    .status{
+    #status{
       margin-top:15px;
       text-align:center;
       color:#00e676;
@@ -90,140 +94,248 @@
 </head>
 <body>
 
-  <div class="container">
+<!-- LOGIN -->
 
-    <h1>Painel Admin</h1>
+<div class="container" id="loginBox">
 
-    <input
-      type="text"
-      id="titulo"
-      placeholder="Título do produto"
-    >
+  <h1>Login Admin</h1>
 
-    <input
-      type="text"
-      id="preco"
-      placeholder="Preço"
-    >
+  <input
+    type="email"
+    id="email"
+    placeholder="Email"
+  >
 
-    <input
-      type="text"
-      id="imagem"
-      placeholder="URL da imagem"
-    >
+  <input
+    type="password"
+    id="senha"
+    placeholder="Senha"
+  >
 
-    <input
-      type="text"
-      id="link"
-      placeholder="Link de afiliado"
-    >
+  <button onclick="login()">
+    Entrar
+  </button>
 
-    <input
-      type="text"
-      id="categoria"
-      placeholder="Categoria"
-    >
+</div>
 
-    <textarea
-      id="descricao"
-      placeholder="Descrição do produto"
-    ></textarea>
+<!-- PAINEL -->
 
-    <button onclick="salvarProduto()">
-      Salvar Produto
-    </button>
+<div
+  class="container"
+  id="painel"
+  style="display:none;"
+>
 
-    <div class="status" id="status"></div>
+  <h1>Painel Admin</h1>
 
-  </div>
+  <input
+    type="text"
+    id="titulo"
+    placeholder="Título do produto"
+  >
 
-  <script>
+  <input
+    type="text"
+    id="preco"
+    placeholder="Preço"
+  >
 
-    // CONFIG FIREBASE
+  <input
+    type="text"
+    id="imagem"
+    placeholder="URL da imagem"
+  >
 
-    const firebaseConfig = {
+  <input
+    type="text"
+    id="link"
+    placeholder="Link afiliado"
+  >
 
-      apiKey: "AIzaSyBrd48UiFiA5OGN2rhLptXSSg_PX5s4AGA",
+  <input
+    type="text"
+    id="categoria"
+    placeholder="Categoria"
+  >
 
-      authDomain: "app-afiliados-971c8.firebaseapp.com",
+  <textarea
+    id="descricao"
+    placeholder="Descrição do produto"
+  ></textarea>
 
-      projectId: "app-afiliados-971c8",
+  <button onclick="salvarProduto()">
+    Salvar Produto
+  </button>
 
-      storageBucket: "app-afiliados-971c8.firebasestorage.app",
+  <button onclick="logout()">
+    Sair
+  </button>
 
-      messagingSenderId: "763269723561",
+  <div id="status"></div>
 
-      appId: "1:763269723561:web:b1063af684ce37ed3cc0b8"
+</div>
+
+<script>
+
+  // =====================================
+  // FIREBASE CONFIG
+  // =====================================
+
+  const firebaseConfig = {
+
+    apiKey: "AIzaSyBrd48UiFiA5OGN2rhLptXSSg_PX5s4AGA",
+
+    authDomain: "app-afiliados-971c8.firebaseapp.com",
+
+    projectId: "app-afiliados-971c8",
+
+    storageBucket: "app-afiliados-971c8.firebasestorage.app",
+
+    messagingSenderId: "763269723561",
+
+    appId: "1:763269723561:web:b1063af684ce37ed3cc0b8"
+
+  };
+
+  firebase.initializeApp(firebaseConfig);
+
+  const db = firebase.firestore();
+
+  // =====================================
+  // LOGIN
+  // =====================================
+
+  function login(){
+
+    const email =
+      document.getElementById("email").value;
+
+    const senha =
+      document.getElementById("senha").value;
+
+    firebase.auth()
+      .signInWithEmailAndPassword(email, senha)
+
+      .then(() => {
+
+        document.getElementById("loginBox")
+          .style.display = "none";
+
+        document.getElementById("painel")
+          .style.display = "block";
+
+      })
+
+      .catch((error) => {
+
+        alert("Erro login: " + error.message);
+
+      });
+
+  }
+
+  // =====================================
+  // LOGOUT
+  // =====================================
+
+  function logout(){
+
+    firebase.auth().signOut();
+
+    location.reload();
+
+  }
+
+  // =====================================
+  // VERIFICAR LOGIN
+  // =====================================
+
+  firebase.auth().onAuthStateChanged(user => {
+
+    if(user){
+
+      document.getElementById("loginBox")
+        .style.display = "none";
+
+      document.getElementById("painel")
+        .style.display = "block";
+
+    }
+
+  });
+
+  // =====================================
+  // SALVAR PRODUTO
+  // =====================================
+
+  async function salvarProduto(){
+
+    const status = document.getElementById("status");
+
+    const produto = {
+
+      titulo: document.getElementById("titulo").value,
+
+      preco: document.getElementById("preco").value,
+
+      imagem: document.getElementById("imagem").value,
+
+      link: document.getElementById("link").value,
+
+      categoria: document.getElementById("categoria").value,
+
+      descricao: document.getElementById("descricao").value,
+
+      status: "novo",
+
+      videosGerados: 0,
+
+      createdAt: new Date()
 
     };
 
-    // INICIAR FIREBASE
+    try{
 
-    firebase.initializeApp(firebaseConfig);
+      await db.collection("produtos").add(produto);
 
-    const db = firebase.firestore();
+      status.innerHTML =
+        "✅ Produto salvo com sucesso!";
 
-    // SALVAR PRODUTO
+      limparCampos();
 
-    async function salvarProduto(){
+    }catch(error){
 
-      const status = document.getElementById("status");
+      console.error(error);
 
-      const produto = {
-
-        titulo: document.getElementById("titulo").value,
-
-        preco: document.getElementById("preco").value,
-
-        imagem: document.getElementById("imagem").value,
-
-        link: document.getElementById("link").value,
-
-        categoria: document.getElementById("categoria").value,
-
-        descricao: document.getElementById("descricao").value,
-
-        createdAt: new Date()
-
-      };
-
-      try{
-
-        await db.collection("produtos").add(produto);
-
-        status.innerHTML = "✅ Produto salvo com sucesso!";
-
-        limparCampos();
-
-      }catch(error){
-
-        console.error(error);
-
-        status.innerHTML = "❌ Erro ao salvar produto";
-
-      }
+      status.innerHTML =
+        "❌ Erro ao salvar produto";
 
     }
 
-    // LIMPAR CAMPOS
+  }
 
-    function limparCampos(){
+  // =====================================
+  // LIMPAR CAMPOS
+  // =====================================
 
-      document.getElementById("titulo").value = "";
+  function limparCampos(){
 
-      document.getElementById("preco").value = "";
+    document.getElementById("titulo").value = "";
 
-      document.getElementById("imagem").value = "";
+    document.getElementById("preco").value = "";
 
-      document.getElementById("link").value = "";
+    document.getElementById("imagem").value = "";
 
-      document.getElementById("categoria").value = "";
+    document.getElementById("link").value = "";
 
-      document.getElementById("descricao").value = "";
+    document.getElementById("categoria").value = "";
 
-    }
+    document.getElementById("descricao").value = "";
 
-  </script>
+  }
+
+</script>
 
 </body>
 </html>
+```
