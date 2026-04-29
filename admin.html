@@ -1,4 +1,3 @@
-```html id="admin_full_final_v5"
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -21,7 +20,7 @@ body{
 }
 
 .container{
-  max-width:700px;
+  max-width:750px;
   margin:auto;
   background:#1e1e1e;
   padding:25px;
@@ -116,21 +115,29 @@ button{
 
 <hr>
 
-<!-- 🔥 CSV IMPORT -->
+<!-- CSV -->
 
 <h2>📥 Importar CSV</h2>
 
 <input type="file" id="csvFile" accept=".csv">
 
-<button onclick="importarCSV()">
-Importar Produtos
-</button>
+<button onclick="importarCSV()">Importar Produtos</button>
 
 <hr>
+
+<!-- PRODUTOS -->
 
 <h2>📊 Produtos (Ranking)</h2>
 
 <div id="listaProdutos"></div>
+
+<hr>
+
+<!-- DASHBOARD -->
+
+<h2>🏆 Vencedores do Dia</h2>
+
+<div id="vencedores"></div>
 
 </div>
 
@@ -157,15 +164,14 @@ const db = firebase.firestore();
 function login(){
 
   firebase.auth()
-  .signInWithEmailAndPassword(
-    email.value,
-    senha.value
-  )
+  .signInWithEmailAndPassword(email.value, senha.value)
   .then(()=>{
 
     loginBox.style.display="none";
     painel.style.display="block";
+
     carregarProdutos();
+    carregarVencedores();
 
   })
   .catch(e=>alert(e.message));
@@ -189,7 +195,9 @@ firebase.auth().onAuthStateChanged(user=>{
   if(user){
     loginBox.style.display="none";
     painel.style.display="block";
+
     carregarProdutos();
+    carregarVencedores();
   }
 });
 
@@ -211,69 +219,63 @@ async function salvarProduto(){
     status: "novo",
     videosGerados: 0,
     score: 0,
+    nivel: "medio",
     createdAt: new Date()
 
   });
 
   status.innerHTML = "Produto salvo!";
   carregarProdutos();
+  carregarVencedores();
 
 }
 
 // =====================================
-// IMPORTAR CSV
+// CSV
 // =====================================
 
 async function importarCSV(){
 
-  const file = document.getElementById("csvFile").files[0];
+  const file = csvFile.files[0];
+  if(!file){ alert("Selecione CSV"); return; }
 
-  if(!file){
-    alert("Selecione um CSV");
-    return;
-  }
-
-  const texto = await file.text();
-  const linhas = texto.split("\n");
+  const text = await file.text();
+  const linhas = text.split("\n");
 
   linhas.shift();
 
-  let total = 0;
+  for(const l of linhas){
 
-  for(const linha of linhas){
+    if(!l.trim()) continue;
 
-    if(!linha.trim()) continue;
-
-    const dados = linha.split(",");
+    const d = l.split(",");
 
     await db.collection("produtos").add({
 
-      titulo: dados[0]?.trim(),
-      preco: dados[1]?.trim(),
-      imagem: dados[2]?.trim(),
-      link: dados[3]?.trim(),
-      categoria: dados[4]?.trim() || "produto",
-
-      descricao: "",
+      titulo: d[0],
+      preco: d[1],
+      imagem: d[2],
+      link: d[3],
+      categoria: d[4] || "produto",
 
       status: "novo",
       videosGerados: 0,
       score: 0,
+      nivel: "medio",
       createdAt: new Date()
 
     });
 
-    total++;
-
   }
 
-  alert(total + " produtos importados!");
+  alert("Importado!");
   carregarProdutos();
+  carregarVencedores();
 
 }
 
 // =====================================
-// AUMENTAR SCORE
+// SCORE
 // =====================================
 
 async function aumentarScore(id, atual){
@@ -285,11 +287,12 @@ async function aumentarScore(id, atual){
   });
 
   carregarProdutos();
+  carregarVencedores();
 
 }
 
 // =====================================
-// LISTAR (RANKING)
+// PRODUTOS
 // =====================================
 
 async function carregarProdutos(){
@@ -297,7 +300,7 @@ async function carregarProdutos(){
   listaProdutos.innerHTML = "";
 
   const snap = await db.collection("produtos")
-  .orderBy("score", "desc")
+  .orderBy("score","desc")
   .get();
 
   snap.forEach(doc=>{
@@ -305,7 +308,6 @@ async function carregarProdutos(){
     let p = doc.data();
 
     listaProdutos.innerHTML += `
-
       <div class="produto"
       style="border-left:5px solid ${
         (p.score||0)>=5 ? '#00e676' : '#444'
@@ -314,12 +316,8 @@ async function carregarProdutos(){
         <h3>${p.titulo}</h3>
 
         <p>💰 ${p.preco}</p>
-
-        <p>⭐ Score: ${p.score || 0}</p>
-
-        <p>Status: ${p.status}</p>
-
-        <p>Vídeos: ${p.videosGerados || 0}</p>
+        <p>⭐ Score: ${p.score||0}</p>
+        <p>🏆 ${p.nivel||"medio"}</p>
 
         <img src="${p.imagem}">
 
@@ -331,14 +329,47 @@ async function carregarProdutos(){
           </button>
 
           <button class="btnScore"
-          onclick="aumentarScore('${doc.id}', ${p.score||0})">
+          onclick="aumentarScore('${doc.id}',${p.score||0})">
             + Score
           </button>
 
         </div>
 
       </div>
+    `;
 
+  });
+
+}
+
+// =====================================
+// VENCEDORES
+// =====================================
+
+async function carregarVencedores(){
+
+  vencedores.innerHTML = "";
+
+  const snap = await db.collection("produtos")
+  .where("nivel","==","vencedor")
+  .orderBy("score","desc")
+  .limit(10)
+  .get();
+
+  snap.forEach(doc=>{
+
+    let p = doc.data();
+
+    vencedores.innerHTML += `
+      <div class="produto"
+      style="border-left:5px solid #00e676">
+
+        <h3>🔥 ${p.titulo}</h3>
+        <p>💰 ${p.preco}</p>
+        <p>⭐ ${p.score}</p>
+        <p>🏆 VENCEDOR</p>
+
+      </div>
     `;
 
   });
@@ -356,6 +387,7 @@ async function excluir(id){
   .delete();
 
   carregarProdutos();
+  carregarVencedores();
 
 }
 
@@ -363,4 +395,3 @@ async function excluir(id){
 
 </body>
 </html>
-```
