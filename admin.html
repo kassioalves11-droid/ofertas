@@ -1,17 +1,31 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+
   <meta charset="UTF-8">
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>Painel Admin</title>
 
+  <!-- FIREBASE -->
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
   <style>
 
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+    }
+
     body{
-      font-family: Arial;
       background:#111;
       color:white;
+      font-family:Arial, sans-serif;
       padding:20px;
     }
 
@@ -19,147 +33,197 @@
       max-width:600px;
       margin:auto;
       background:#1e1e1e;
-      padding:20px;
-      border-radius:10px;
+      padding:25px;
+      border-radius:12px;
+      box-shadow:0 0 15px rgba(0,0,0,0.4);
     }
 
-    input, textarea{
+    h1{
+      text-align:center;
+      margin-bottom:20px;
+      color:#00e676;
+    }
+
+    input,
+    textarea{
       width:100%;
-      margin-top:10px;
-      padding:12px;
+      padding:14px;
+      margin-top:12px;
       border:none;
       border-radius:8px;
-      background:#2b2b2b;
+      background:#2c2c2c;
       color:white;
+      font-size:15px;
+    }
+
+    textarea{
+      height:120px;
+      resize:none;
     }
 
     button{
       width:100%;
-      padding:14px;
-      margin-top:15px;
+      padding:15px;
+      margin-top:18px;
       border:none;
       border-radius:8px;
       background:#00c853;
       color:white;
       font-size:16px;
+      font-weight:bold;
       cursor:pointer;
+      transition:0.3s;
     }
 
     button:hover{
       opacity:0.9;
     }
 
-    h1{
+    .status{
+      margin-top:15px;
       text-align:center;
+      color:#00e676;
     }
 
   </style>
 
-  <!-- FIREBASE -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-
 </head>
 <body>
 
-<div class="container">
+  <div class="container">
 
-  <h1>Painel Admin</h1>
+    <h1>Painel Admin</h1>
 
-  <input type="text" id="titulo" placeholder="Título do produto">
+    <input
+      type="text"
+      id="titulo"
+      placeholder="Título do produto"
+    >
 
-  <input type="text" id="preco" placeholder="Preço">
+    <input
+      type="text"
+      id="preco"
+      placeholder="Preço"
+    >
 
-  <input type="text" id="imagem" placeholder="URL da imagem">
+    <input
+      type="text"
+      id="imagem"
+      placeholder="URL da imagem"
+    >
 
-  <input type="text" id="link" placeholder="Link afiliado">
+    <input
+      type="text"
+      id="link"
+      placeholder="Link de afiliado"
+    >
 
-  <input type="text" id="categoria" placeholder="Categoria">
+    <input
+      type="text"
+      id="categoria"
+      placeholder="Categoria"
+    >
 
-  <textarea id="descricao" placeholder="Descrição"></textarea>
+    <textarea
+      id="descricao"
+      placeholder="Descrição do produto"
+    ></textarea>
 
-  <button onclick="salvarProduto()">
-    Salvar Produto
-  </button>
+    <button onclick="salvarProduto()">
+      Salvar Produto
+    </button>
 
-</div>
+    <div class="status" id="status"></div>
 
-<script>
+  </div>
 
-  // CONFIG FIREBASE
+  <script>
 
-  const firebaseConfig = {
+    // CONFIG FIREBASE
 
-    apiKey: "SUA_API_KEY",
+    const firebaseConfig = {
 
-    authDomain: "SEU_DOMINIO.firebaseapp.com",
+      apiKey: "AIzaSyBrd48UiFiA5OGN2rhLptXSSg_PX5s4AGA",
 
-    projectId: "SEU_PROJECT_ID",
+      authDomain: "app-afiliados-971c8.firebaseapp.com",
 
-    storageBucket: "SEU_BUCKET.appspot.com",
+      projectId: "app-afiliados-971c8",
 
-    messagingSenderId: "SEU_ID",
+      storageBucket: "app-afiliados-971c8.firebasestorage.app",
 
-    appId: "SEU_APP_ID"
+      messagingSenderId: "763269723561",
 
-  };
-
-  firebase.initializeApp(firebaseConfig);
-
-  const db = firebase.firestore();
-
-  // SALVAR PRODUTO
-
-  async function salvarProduto(){
-
-    const produto = {
-
-      titulo: document.getElementById('titulo').value,
-
-      preco: document.getElementById('preco').value,
-
-      imagem: document.getElementById('imagem').value,
-
-      link: document.getElementById('link').value,
-
-      categoria: document.getElementById('categoria').value,
-
-      descricao: document.getElementById('descricao').value,
-
-      createdAt: new Date()
+      appId: "1:763269723561:web:b1063af684ce37ed3cc0b8"
 
     };
 
-    try{
+    // INICIAR FIREBASE
 
-      await db.collection("produtos").add(produto);
+    firebase.initializeApp(firebaseConfig);
 
-      alert("Produto salvo com sucesso!");
+    const db = firebase.firestore();
 
-      limparCampos();
+    // SALVAR PRODUTO
 
-    }catch(error){
+    async function salvarProduto(){
 
-      console.error(error);
+      const status = document.getElementById("status");
 
-      alert("Erro ao salvar");
+      const produto = {
+
+        titulo: document.getElementById("titulo").value,
+
+        preco: document.getElementById("preco").value,
+
+        imagem: document.getElementById("imagem").value,
+
+        link: document.getElementById("link").value,
+
+        categoria: document.getElementById("categoria").value,
+
+        descricao: document.getElementById("descricao").value,
+
+        createdAt: new Date()
+
+      };
+
+      try{
+
+        await db.collection("produtos").add(produto);
+
+        status.innerHTML = "✅ Produto salvo com sucesso!";
+
+        limparCampos();
+
+      }catch(error){
+
+        console.error(error);
+
+        status.innerHTML = "❌ Erro ao salvar produto";
+
+      }
 
     }
 
-  }
+    // LIMPAR CAMPOS
 
-  function limparCampos(){
+    function limparCampos(){
 
-    document.getElementById('titulo').value = "";
-    document.getElementById('preco').value = "";
-    document.getElementById('imagem').value = "";
-    document.getElementById('link').value = "";
-    document.getElementById('categoria').value = "";
-    document.getElementById('descricao').value = "";
+      document.getElementById("titulo").value = "";
 
-  }
+      document.getElementById("preco").value = "";
 
-</script>
+      document.getElementById("imagem").value = "";
+
+      document.getElementById("link").value = "";
+
+      document.getElementById("categoria").value = "";
+
+      document.getElementById("descricao").value = "";
+
+    }
+
+  </script>
 
 </body>
 </html>
