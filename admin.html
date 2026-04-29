@@ -464,7 +464,7 @@ async function carregarProdutos(){
 
   const snapshot =
     await db.collection("produtos")
-    .orderBy("createdAt", "desc")
+    .orderBy("score", "desc")
     .get();
 
   snapshot.forEach(doc => {
