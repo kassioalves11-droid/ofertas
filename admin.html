@@ -110,10 +110,6 @@ button:hover{
   background:#d50000;
 }
 
-.btnEditar{
-  background:#2962ff;
-}
-
 </style>
 
 </head>
@@ -198,6 +194,24 @@ Sair
 </button>
 
 <div id="status"></div>
+
+<!-- IMPORTAR CSV -->
+
+<h1 style="margin-top:40px;">
+Importar CSV
+</h1>
+
+<input
+type="file"
+id="csvFile"
+accept=".csv"
+/>
+
+<button onclick="importarCSV()">
+Importar Produtos
+</button>
+
+<!-- LISTA -->
 
 <h1 style="margin-top:40px;">
 Produtos
@@ -361,6 +375,83 @@ async function salvarProduto(){
 }
 
 // =====================================
+// IMPORTAR CSV
+// =====================================
+
+async function importarCSV(){
+
+  const file =
+    document.getElementById("csvFile")
+    .files[0];
+
+  if(!file){
+
+    alert("Selecione um CSV");
+
+    return;
+
+  }
+
+  const texto = await file.text();
+
+  const linhas = texto.split("\n");
+
+  linhas.shift();
+
+  let total = 0;
+
+  for(const linha of linhas){
+
+    if(!linha.trim()) continue;
+
+    const dados = linha.split(",");
+
+    const produto = {
+
+      titulo: dados[0]?.trim() || "",
+
+      preco: dados[1]?.trim() || "",
+
+      imagem: dados[2]?.trim() || "",
+
+      link: dados[3]?.trim() || "",
+
+      categoria: dados[4]?.trim() || "",
+
+      descricao: "",
+
+      status: "novo",
+
+      videosGerados: 0,
+
+      createdAt: new Date()
+
+    };
+
+    try{
+
+      await db.collection("produtos")
+        .add(produto);
+
+      total++;
+
+    }catch(error){
+
+      console.error(error);
+
+    }
+
+  }
+
+  alert(
+    total + " produtos importados!"
+  );
+
+  carregarProdutos();
+
+}
+
+// =====================================
 // LISTAR PRODUTOS
 // =====================================
 
@@ -390,9 +481,9 @@ async function carregarProdutos(){
 
         <p><strong>Categoria:</strong> ${p.categoria}</p>
 
-        <p><strong>Status:</strong> ${p.status}</p>
+        <p><strong>Status:</strong> ${p.status || "novo"}</p>
 
-        <p><strong>Vídeos:</strong> ${p.videosGerados}</p>
+        <p><strong>Vídeos:</strong> ${p.videosGerados || 0}</p>
 
         <img src="${p.imagem}">
 
