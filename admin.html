@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Painel Admin</title>
+
+  <style>
+
+    body{
+      font-family: Arial;
+      background:#111;
+      color:white;
+      padding:20px;
+    }
+
+    .container{
+      max-width:600px;
+      margin:auto;
+      background:#1e1e1e;
+      padding:20px;
+      border-radius:10px;
+    }
+
+    input, textarea{
+      width:100%;
+      margin-top:10px;
+      padding:12px;
+      border:none;
+      border-radius:8px;
+      background:#2b2b2b;
+      color:white;
+    }
+
+    button{
+      width:100%;
+      padding:14px;
+      margin-top:15px;
+      border:none;
+      border-radius:8px;
+      background:#00c853;
+      color:white;
+      font-size:16px;
+      cursor:pointer;
+    }
+
+    button:hover{
+      opacity:0.9;
+    }
+
+    h1{
+      text-align:center;
+    }
+
+  </style>
+
+  <!-- FIREBASE -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+</head>
+<body>
+
+<div class="container">
+
+  <h1>Painel Admin</h1>
+
+  <input type="text" id="titulo" placeholder="Título do produto">
+
+  <input type="text" id="preco" placeholder="Preço">
+
+  <input type="text" id="imagem" placeholder="URL da imagem">
+
+  <input type="text" id="link" placeholder="Link afiliado">
+
+  <input type="text" id="categoria" placeholder="Categoria">
+
+  <textarea id="descricao" placeholder="Descrição"></textarea>
+
+  <button onclick="salvarProduto()">
+    Salvar Produto
+  </button>
+
+</div>
+
+<script>
+
+  // CONFIG FIREBASE
+
+  const firebaseConfig = {
+
+    apiKey: "SUA_API_KEY",
+
+    authDomain: "SEU_DOMINIO.firebaseapp.com",
+
+    projectId: "SEU_PROJECT_ID",
+
+    storageBucket: "SEU_BUCKET.appspot.com",
+
+    messagingSenderId: "SEU_ID",
+
+    appId: "SEU_APP_ID"
+
+  };
+
+  firebase.initializeApp(firebaseConfig);
+
+  const db = firebase.firestore();
+
+  // SALVAR PRODUTO
+
+  async function salvarProduto(){
+
+    const produto = {
+
+      titulo: document.getElementById('titulo').value,
+
+      preco: document.getElementById('preco').value,
+
+      imagem: document.getElementById('imagem').value,
+
+      link: document.getElementById('link').value,
+
+      categoria: document.getElementById('categoria').value,
+
+      descricao: document.getElementById('descricao').value,
+
+      createdAt: new Date()
+
+    };
+
+    try{
+
+      await db.collection("produtos").add(produto);
+
+      alert("Produto salvo com sucesso!");
+
+      limparCampos();
+
+    }catch(error){
+
+      console.error(error);
+
+      alert("Erro ao salvar");
+
+    }
+
+  }
+
+  function limparCampos(){
+
+    document.getElementById('titulo').value = "";
+    document.getElementById('preco').value = "";
+    document.getElementById('imagem').value = "";
+    document.getElementById('link').value = "";
+    document.getElementById('categoria').value = "";
+    document.getElementById('descricao').value = "";
+
+  }
+
+</script>
+
+</body>
+</html>
