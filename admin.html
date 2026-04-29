@@ -1,258 +1,255 @@
-
+```html id="zqvtrn"
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 
-  <meta charset="UTF-8">
+<meta charset="UTF-8">
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Painel Admin</title>
+<title>Painel Admin</title>
 
-  <!-- FIREBASE -->
+<!-- FIREBASE -->
 
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
-  <style>
+<style>
 
-    *{
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
-    }
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
 
-    body{
-      background:#111;
-      color:white;
-      font-family:Arial, sans-serif;
-      padding:20px;
-    }
+body{
+  background:#111;
+  color:white;
+  font-family:Arial, sans-serif;
+  padding:20px;
+}
 
-    .container{
-      max-width:600px;
-      margin:auto;
-      background:#1e1e1e;
-      padding:25px;
-      border-radius:12px;
-      box-shadow:0 0 15px rgba(0,0,0,0.4);
-      margin-top:40px;
-    }
+.container{
+  max-width:700px;
+  margin:auto;
+  background:#1e1e1e;
+  padding:25px;
+  border-radius:12px;
+  box-shadow:0 0 15px rgba(0,0,0,0.4);
+  margin-top:40px;
+}
 
-    h1{
-      text-align:center;
-      margin-bottom:20px;
-      color:#00e676;
-    }
+h1{
+  text-align:center;
+  margin-bottom:20px;
+  color:#00e676;
+}
 
-    input,
-    textarea{
-      width:100%;
-      padding:14px;
-      margin-top:12px;
-      border:none;
-      border-radius:8px;
-      background:#2c2c2c;
-      color:white;
-      font-size:15px;
-    }
+input,
+textarea{
+  width:100%;
+  padding:14px;
+  margin-top:12px;
+  border:none;
+  border-radius:8px;
+  background:#2c2c2c;
+  color:white;
+  font-size:15px;
+}
 
-    textarea{
-      height:120px;
-      resize:none;
-    }
+textarea{
+  height:120px;
+  resize:none;
+}
 
-    button{
-      width:100%;
-      padding:15px;
-      margin-top:18px;
-      border:none;
-      border-radius:8px;
-      background:#00c853;
-      color:white;
-      font-size:16px;
-      font-weight:bold;
-      cursor:pointer;
-      transition:0.3s;
-    }
+button{
+  width:100%;
+  padding:15px;
+  margin-top:18px;
+  border:none;
+  border-radius:8px;
+  background:#00c853;
+  color:white;
+  font-size:16px;
+  font-weight:bold;
+  cursor:pointer;
+}
 
-    button:hover{
-      opacity:0.9;
-    }
+button:hover{
+  opacity:0.9;
+}
 
-    #status{
-      margin-top:15px;
-      text-align:center;
-      color:#00e676;
-    }
+#status{
+  margin-top:15px;
+  text-align:center;
+  color:#00e676;
+}
 
-  </style>
+.produto{
+  background:#2a2a2a;
+  padding:15px;
+  border-radius:10px;
+  margin-top:15px;
+}
+
+.produto img{
+  width:100%;
+  border-radius:10px;
+  margin-top:10px;
+}
+
+.acoes{
+  display:flex;
+  gap:10px;
+  margin-top:10px;
+}
+
+.btnExcluir{
+  background:#d50000;
+}
+
+.btnEditar{
+  background:#2962ff;
+}
+
+</style>
 
 </head>
+
 <body>
 
 <!-- LOGIN -->
 
 <div class="container" id="loginBox">
 
-  <h1>Login Admin</h1>
+<h1>Login Admin</h1>
 
-  <input
-    type="email"
-    id="email"
-    placeholder="Email"
-  >
+<input
+type="email"
+id="email"
+placeholder="Email"
+>
 
-  <input
-    type="password"
-    id="senha"
-    placeholder="Senha"
-  >
+<input
+type="password"
+id="senha"
+placeholder="Senha"
+>
 
-  <button onclick="login()">
-    Entrar
-  </button>
+<button onclick="login()">
+Entrar
+</button>
 
 </div>
 
 <!-- PAINEL -->
 
 <div
-  class="container"
-  id="painel"
-  style="display:none;"
+class="container"
+id="painel"
+style="display:none;"
 >
 
-  <h1>Painel Admin</h1>
+<h1>Painel Admin</h1>
 
-  <input
-    type="text"
-    id="titulo"
-    placeholder="Título do produto"
-  >
+<input
+type="text"
+id="titulo"
+placeholder="Título do produto"
+>
 
-  <input
-    type="text"
-    id="preco"
-    placeholder="Preço"
-  >
+<input
+type="text"
+id="preco"
+placeholder="Preço"
+>
 
-  <input
-    type="text"
-    id="imagem"
-    placeholder="URL da imagem"
-  >
+<input
+type="text"
+id="imagem"
+placeholder="URL da imagem"
+>
 
-  <input
-    type="text"
-    id="link"
-    placeholder="Link afiliado"
-  >
+<input
+type="text"
+id="link"
+placeholder="Link afiliado"
+>
 
-  <input
-    type="text"
-    id="categoria"
-    placeholder="Categoria"
-  >
+<input
+type="text"
+id="categoria"
+placeholder="Categoria"
+>
 
-  <textarea
-    id="descricao"
-    placeholder="Descrição do produto"
-  ></textarea>
+<textarea
+id="descricao"
+placeholder="Descrição"
+></textarea>
 
-  <button onclick="salvarProduto()">
-    Salvar Produto
-  </button>
+<button onclick="salvarProduto()">
+Salvar Produto
+</button>
 
-  <button onclick="logout()">
-    Sair
-  </button>
+<button onclick="logout()">
+Sair
+</button>
 
-  <div id="status"></div>
+<div id="status"></div>
+
+<h1 style="margin-top:40px;">
+Produtos
+</h1>
+
+<div id="listaProdutos"></div>
 
 </div>
 
 <script>
 
-  // =====================================
-  // FIREBASE CONFIG
-  // =====================================
+// =====================================
+// FIREBASE
+// =====================================
 
-  const firebaseConfig = {
+const firebaseConfig = {
 
-    apiKey: "AIzaSyBrd48UiFiA5OGN2rhLptXSSg_PX5s4AGA",
+  apiKey: "AIzaSyBrd48UiFiA5OGN2rhLptXSSg_PX5s4AGA",
 
-    authDomain: "app-afiliados-971c8.firebaseapp.com",
+  authDomain: "app-afiliados-971c8.firebaseapp.com",
 
-    projectId: "app-afiliados-971c8",
+  projectId: "app-afiliados-971c8",
 
-    storageBucket: "app-afiliados-971c8.firebasestorage.app",
+  storageBucket: "app-afiliados-971c8.firebasestorage.app",
 
-    messagingSenderId: "763269723561",
+  messagingSenderId: "763269723561",
 
-    appId: "1:763269723561:web:b1063af684ce37ed3cc0b8"
+  appId: "1:763269723561:web:b1063af684ce37ed3cc0b8"
 
-  };
+};
 
-  firebase.initializeApp(firebaseConfig);
+firebase.initializeApp(firebaseConfig);
 
-  const db = firebase.firestore();
+const db = firebase.firestore();
 
-  // =====================================
-  // LOGIN
-  // =====================================
+// =====================================
+// LOGIN
+// =====================================
 
-  function login(){
+function login(){
 
-    const email =
-      document.getElementById("email").value;
+  const email =
+    document.getElementById("email").value;
 
-    const senha =
-      document.getElementById("senha").value;
+  const senha =
+    document.getElementById("senha").value;
 
-    firebase.auth()
-      .signInWithEmailAndPassword(email, senha)
+  firebase.auth()
+    .signInWithEmailAndPassword(email, senha)
 
-      .then(() => {
-
-        document.getElementById("loginBox")
-          .style.display = "none";
-
-        document.getElementById("painel")
-          .style.display = "block";
-
-      })
-
-      .catch((error) => {
-
-        alert("Erro login: " + error.message);
-
-      });
-
-  }
-
-  // =====================================
-  // LOGOUT
-  // =====================================
-
-  function logout(){
-
-    firebase.auth().signOut();
-
-    location.reload();
-
-  }
-
-  // =====================================
-  // VERIFICAR LOGIN
-  // =====================================
-
-  firebase.auth().onAuthStateChanged(user => {
-
-    if(user){
+    .then(() => {
 
       document.getElementById("loginBox")
         .style.display = "none";
@@ -260,81 +257,206 @@
       document.getElementById("painel")
         .style.display = "block";
 
-    }
+      carregarProdutos();
+
+    })
+
+    .catch((error) => {
+
+      alert("Erro login: " + error.message);
+
+    });
+
+}
+
+// =====================================
+// LOGOUT
+// =====================================
+
+function logout(){
+
+  firebase.auth().signOut();
+
+  location.reload();
+
+}
+
+// =====================================
+// VERIFICAR LOGIN
+// =====================================
+
+firebase.auth().onAuthStateChanged(user => {
+
+  if(user){
+
+    document.getElementById("loginBox")
+      .style.display = "none";
+
+    document.getElementById("painel")
+      .style.display = "block";
+
+    carregarProdutos();
+
+  }
+
+});
+
+// =====================================
+// SALVAR PRODUTO
+// =====================================
+
+async function salvarProduto(){
+
+  const status =
+    document.getElementById("status");
+
+  const produto = {
+
+    titulo:
+      document.getElementById("titulo").value,
+
+    preco:
+      document.getElementById("preco").value,
+
+    imagem:
+      document.getElementById("imagem").value,
+
+    link:
+      document.getElementById("link").value,
+
+    categoria:
+      document.getElementById("categoria").value,
+
+    descricao:
+      document.getElementById("descricao").value,
+
+    status: "novo",
+
+    videosGerados: 0,
+
+    createdAt: new Date()
+
+  };
+
+  try{
+
+    await db.collection("produtos")
+      .add(produto);
+
+    status.innerHTML =
+      "✅ Produto salvo!";
+
+    limparCampos();
+
+    carregarProdutos();
+
+  }catch(error){
+
+    console.error(error);
+
+    status.innerHTML =
+      "❌ Erro ao salvar";
+
+  }
+
+}
+
+// =====================================
+// LISTAR PRODUTOS
+// =====================================
+
+async function carregarProdutos(){
+
+  const lista =
+    document.getElementById("listaProdutos");
+
+  lista.innerHTML = "";
+
+  const snapshot =
+    await db.collection("produtos")
+    .orderBy("createdAt", "desc")
+    .get();
+
+  snapshot.forEach(doc => {
+
+    const p = doc.data();
+
+    lista.innerHTML += `
+
+      <div class="produto">
+
+        <h2>${p.titulo}</h2>
+
+        <p><strong>Preço:</strong> R$ ${p.preco}</p>
+
+        <p><strong>Categoria:</strong> ${p.categoria}</p>
+
+        <p><strong>Status:</strong> ${p.status}</p>
+
+        <p><strong>Vídeos:</strong> ${p.videosGerados}</p>
+
+        <img src="${p.imagem}">
+
+        <div class="acoes">
+
+          <button
+            class="btnExcluir"
+            onclick="excluirProduto('${doc.id}')"
+          >
+            Excluir
+          </button>
+
+        </div>
+
+      </div>
+
+    `;
 
   });
 
-  // =====================================
-  // SALVAR PRODUTO
-  // =====================================
+}
 
-  async function salvarProduto(){
+// =====================================
+// EXCLUIR
+// =====================================
 
-    const status = document.getElementById("status");
+async function excluirProduto(id){
 
-    const produto = {
+  const confirmar =
+    confirm("Deseja excluir?");
 
-      titulo: document.getElementById("titulo").value,
+  if(!confirmar) return;
 
-      preco: document.getElementById("preco").value,
+  await db.collection("produtos")
+    .doc(id)
+    .delete();
 
-      imagem: document.getElementById("imagem").value,
+  carregarProdutos();
 
-      link: document.getElementById("link").value,
+}
 
-      categoria: document.getElementById("categoria").value,
+// =====================================
+// LIMPAR
+// =====================================
 
-      descricao: document.getElementById("descricao").value,
+function limparCampos(){
 
-      status: "novo",
+  document.getElementById("titulo").value = "";
 
-      videosGerados: 0,
+  document.getElementById("preco").value = "";
 
-      createdAt: new Date()
+  document.getElementById("imagem").value = "";
 
-    };
+  document.getElementById("link").value = "";
 
-    try{
+  document.getElementById("categoria").value = "";
 
-      await db.collection("produtos").add(produto);
+  document.getElementById("descricao").value = "";
 
-      status.innerHTML =
-        "✅ Produto salvo com sucesso!";
-
-      limparCampos();
-
-    }catch(error){
-
-      console.error(error);
-
-      status.innerHTML =
-        "❌ Erro ao salvar produto";
-
-    }
-
-  }
-
-  // =====================================
-  // LIMPAR CAMPOS
-  // =====================================
-
-  function limparCampos(){
-
-    document.getElementById("titulo").value = "";
-
-    document.getElementById("preco").value = "";
-
-    document.getElementById("imagem").value = "";
-
-    document.getElementById("link").value = "";
-
-    document.getElementById("categoria").value = "";
-
-    document.getElementById("descricao").value = "";
-
-  }
+}
 
 </script>
 
 </body>
 </html>
+```
