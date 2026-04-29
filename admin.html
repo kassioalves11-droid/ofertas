@@ -1,4 +1,4 @@
-
+```html id="admin_full_final_v5"
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -82,9 +82,11 @@ button{
 
 <body>
 
+<!-- LOGIN -->
+
 <div class="container" id="loginBox">
 
-<h1>Login</h1>
+<h1>Login Admin</h1>
 
 <input type="email" id="email" placeholder="Email">
 <input type="password" id="senha" placeholder="Senha">
@@ -93,6 +95,8 @@ button{
 
 </div>
 
+<!-- PAINEL -->
+
 <div class="container" id="painel" style="display:none;">
 
 <h1>Painel Admin</h1>
@@ -100,23 +104,41 @@ button{
 <input id="titulo" placeholder="Título">
 <input id="preco" placeholder="Preço">
 <input id="imagem" placeholder="Imagem URL">
-<input id="link" placeholder="Link">
+<input id="link" placeholder="Link afiliado">
 <input id="categoria" placeholder="Categoria">
 
 <textarea id="descricao" placeholder="Descrição"></textarea>
 
-<button onclick="salvarProduto()">Salvar</button>
+<button onclick="salvarProduto()">Salvar Produto</button>
 <button onclick="logout()">Sair</button>
 
 <div id="status"></div>
 
-<h1>Produtos (Ranking)</h1>
+<hr>
+
+<!-- 🔥 CSV IMPORT -->
+
+<h2>📥 Importar CSV</h2>
+
+<input type="file" id="csvFile" accept=".csv">
+
+<button onclick="importarCSV()">
+Importar Produtos
+</button>
+
+<hr>
+
+<h2>📊 Produtos (Ranking)</h2>
 
 <div id="listaProdutos"></div>
 
 </div>
 
 <script>
+
+// =====================================
+// FIREBASE
+// =====================================
 
 const firebaseConfig = {
   apiKey: "AIzaSyBrd48UiFiA5OGN2rhLptXSSg_PX5s4AGA",
@@ -125,9 +147,12 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
+
 const db = firebase.firestore();
 
+// =====================================
 // LOGIN
+// =====================================
 
 function login(){
 
@@ -147,26 +172,30 @@ function login(){
 
 }
 
+// =====================================
 // LOGOUT
+// =====================================
 
 function logout(){
   firebase.auth().signOut();
   location.reload();
 }
 
+// =====================================
 // AUTH
+// =====================================
 
 firebase.auth().onAuthStateChanged(user=>{
-
   if(user){
     loginBox.style.display="none";
     painel.style.display="block";
     carregarProdutos();
   }
-
 });
 
-// SALVAR
+// =====================================
+// SALVAR PRODUTO
+// =====================================
 
 async function salvarProduto(){
 
@@ -186,12 +215,66 @@ async function salvarProduto(){
 
   });
 
-  status.innerHTML = "Salvo!";
+  status.innerHTML = "Produto salvo!";
   carregarProdutos();
 
 }
 
+// =====================================
+// IMPORTAR CSV
+// =====================================
+
+async function importarCSV(){
+
+  const file = document.getElementById("csvFile").files[0];
+
+  if(!file){
+    alert("Selecione um CSV");
+    return;
+  }
+
+  const texto = await file.text();
+  const linhas = texto.split("\n");
+
+  linhas.shift();
+
+  let total = 0;
+
+  for(const linha of linhas){
+
+    if(!linha.trim()) continue;
+
+    const dados = linha.split(",");
+
+    await db.collection("produtos").add({
+
+      titulo: dados[0]?.trim(),
+      preco: dados[1]?.trim(),
+      imagem: dados[2]?.trim(),
+      link: dados[3]?.trim(),
+      categoria: dados[4]?.trim() || "produto",
+
+      descricao: "",
+
+      status: "novo",
+      videosGerados: 0,
+      score: 0,
+      createdAt: new Date()
+
+    });
+
+    total++;
+
+  }
+
+  alert(total + " produtos importados!");
+  carregarProdutos();
+
+}
+
+// =====================================
 // AUMENTAR SCORE
+// =====================================
 
 async function aumentarScore(id, atual){
 
@@ -205,7 +288,9 @@ async function aumentarScore(id, atual){
 
 }
 
+// =====================================
 // LISTAR (RANKING)
+// =====================================
 
 async function carregarProdutos(){
 
@@ -222,9 +307,9 @@ async function carregarProdutos(){
     listaProdutos.innerHTML += `
 
       <div class="produto"
-        style="border-left:5px solid ${
-          (p.score||0)>=5 ? '#00e676' : '#444'
-        }">
+      style="border-left:5px solid ${
+        (p.score||0)>=5 ? '#00e676' : '#444'
+      }">
 
         <h3>${p.titulo}</h3>
 
@@ -260,7 +345,9 @@ async function carregarProdutos(){
 
 }
 
+// =====================================
 // EXCLUIR
+// =====================================
 
 async function excluir(id){
 
@@ -276,4 +363,4 @@ async function excluir(id){
 
 </body>
 </html>
-
+```
