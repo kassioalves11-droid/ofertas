@@ -1,347 +1,70 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
+<!-- ===================================== -->
+<!-- COLE ISSO NO admin.html -->
+<!-- ===================================== -->
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Painel IA Afiliados - Fase 3</title>
-
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<style>
-
-body{
-  background:#111;
-  color:white;
-  font-family:Arial;
-  padding:20px;
-}
-
-.container{
-  max-width:1000px;
-  margin:auto;
-  background:#1e1e1e;
-  padding:25px;
-  border-radius:12px;
-}
-
-input, textarea{
-  width:100%;
-  padding:12px;
-  margin-top:10px;
-  border:none;
-  border-radius:8px;
-  background:#2c2c2c;
-  color:white;
-}
-
-button{
-  width:100%;
-  padding:12px;
-  margin-top:10px;
-  border:none;
-  border-radius:8px;
-  background:#00c853;
-  color:white;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-.produto{
-  background:#2a2a2a;
-  padding:15px;
-  margin-top:15px;
-  border-radius:10px;
-}
-
-.produto img{
-  width:100%;
-  border-radius:10px;
-  margin-top:10px;
-}
-
-.badge{
-  background:#333;
-  padding:5px 10px;
-  border-radius:6px;
-  display:inline-block;
-  margin-top:5px;
-}
-
-pre{
-  background:#111;
-  padding:10px;
-  border-radius:8px;
-  overflow:auto;
-  white-space:pre-wrap;
-}
-
-a{
-  color:#00e676;
-}
-
-</style>
-
-</head>
-
-<body>
-
-<!-- LOGIN -->
-
-<div class="container" id="loginBox">
-
-<h1>Login IA Admin</h1>
-
-<input type="email" id="email" placeholder="Email">
-<input type="password" id="senha" placeholder="Senha">
-
-<button onclick="login()">Entrar</button>
-
-</div>
-
-<!-- PAINEL -->
-
-<div class="container" id="painel" style="display:none;">
-
-<h1>🚀 Painel Inteligente de Afiliados</h1>
-
-<input id="titulo" placeholder="Título">
-<input id="preco" placeholder="Preço">
-<input id="imagem" placeholder="Imagem URL">
-<input id="link" placeholder="Link afiliado">
-<input id="categoria" placeholder="Categoria">
-
-<button onclick="salvarProduto()">
-Salvar Produto
-</button>
-
-<button onclick="logout()">
-Sair
-</button>
-
-<hr>
-
-<h2>📥 Importar CSV</h2>
-
-<input type="file" id="csvFile">
-
-<button onclick="importarCSV()">
-Importar CSV
-</button>
-
-<hr>
-
-<h2>🧠 IA de Decisão</h2>
-
-<p id="iaSugestao">Carregando...</p>
-
-<hr>
-
-<h2>📊 Gráfico de Performance</h2>
-
-<canvas id="grafico"></canvas>
-
-<hr>
-
-<h2>📦 Operação Diária</h2>
-
-<div id="operacao"></div>
-
-<hr>
-
-<h2>🏆 Produtos em Destaque</h2>
-
-<div id="vencedores"></div>
-
-<hr>
-
-<h2>📦 Todos Produtos</h2>
-
-<div id="listaProdutos"></div>
-
-</div>
+<!-- ===================================== -->
+<!-- FUNÇÃO CLICK A/B -->
+<!-- ===================================== -->
 
 <script>
 
-// =====================================
-// FIREBASE
-// =====================================
+async function clickEstilo(id, estilo){
 
-const firebaseConfig = {
+  const ref =
+    db.collection("produtos").doc(id);
 
-  apiKey: "AIzaSyBrd48UiFiA5OGN2rhLptXSSg_PX5s4AGA",
-  authDomain: "app-afiliados-971c8.firebaseapp.com",
-  projectId: "app-afiliados-971c8",
+  const doc =
+    await ref.get();
 
-};
+  let p = doc.data();
 
-firebase.initializeApp(firebaseConfig);
+  let clicksA =
+    p.clicksA || 0;
 
-const db = firebase.firestore();
+  let clicksB =
+    p.clicksB || 0;
 
-// =====================================
-// LOGIN
-// =====================================
+  // =====================================
+  // SOMAR CLICK
+  // =====================================
 
-function login(){
+  if(estilo === "A"){
 
-  firebase.auth()
-  .signInWithEmailAndPassword(
-    email.value,
-    senha.value
-  )
-  .then(()=>{
+    clicksA++;
 
-    loginBox.style.display="none";
-    painel.style.display="block";
+  }else{
 
-    carregarTudo();
-
-  })
-  .catch(()=>{
-
-    alert("Erro no login");
-
-  });
-
-}
-
-function logout(){
-
-  firebase.auth().signOut();
-
-  location.reload();
-
-}
-
-firebase.auth().onAuthStateChanged(user=>{
-
-  if(user){
-
-    loginBox.style.display="none";
-    painel.style.display="block";
-
-    carregarTudo();
+    clicksB++;
 
   }
 
-});
+  // =====================================
+  // DEFINIR VENCEDOR
+  // =====================================
 
-// =====================================
-// SALVAR PRODUTO
-// =====================================
+  let vencedor = "EMPATE";
 
-async function salvarProduto(){
+  if(clicksA > clicksB){
 
-  await db.collection("produtos").add({
-
-    titulo: titulo.value,
-    preco: preco.value,
-    imagem: imagem.value,
-    link: link.value,
-    categoria: categoria.value,
-
-    score: 0,
-    cliques: 0,
-    videosGerados: 0,
-
-    nivel: "medio",
-    status: "novo",
-
-    createdAt: new Date()
-
-  });
-
-  carregarTudo();
-
-}
-
-// =====================================
-// IMPORTAR CSV
-// =====================================
-
-async function importarCSV(){
-
-  const file = csvFile.files[0];
-
-  if(!file){
-    alert("Selecione um CSV");
-    return;
-  }
-
-  const text = await file.text();
-
-  const linhas = text.split("\n");
-
-  linhas.shift();
-
-  for(const linha of linhas){
-
-    if(!linha.trim()) continue;
-
-    const d = linha.split(",");
-
-    await db.collection("produtos").add({
-
-      titulo: d[0],
-      preco: d[1],
-      imagem: d[2],
-      link: d[3],
-      categoria: d[4] || "produto",
-
-      score: 0,
-      cliques: 0,
-      videosGerados: 0,
-
-      nivel: "medio",
-      status: "novo",
-
-      createdAt: new Date()
-
-    });
+    vencedor = "A";
 
   }
 
-  carregarTudo();
+  if(clicksB > clicksA){
 
-}
+    vencedor = "B";
 
-// =====================================
-// CLIQUE
-// =====================================
+  }
 
-async function clicou(id){
-
-  const ref = db.collection("produtos").doc(id);
-
-  const doc = await ref.get();
-
-  let atual = doc.data().cliques || 0;
+  // =====================================
+  // UPDATE FIREBASE
+  // =====================================
 
   await ref.update({
 
-    cliques: atual + 1
-
-  });
-
-}
-
-// =====================================
-// SCORE
-// =====================================
-
-async function aumentarScore(id, atual){
-
-  await db.collection("produtos")
-  .doc(id)
-  .update({
-
-    score: atual + 1
+    clicksA,
+    clicksB,
+    estiloVencedor: vencedor
 
   });
 
@@ -349,292 +72,15 @@ async function aumentarScore(id, atual){
 
 }
 
-// =====================================
-// VIRALIDADE
-// =====================================
-
-function viralidade(p){
-
-  let score = p.score || 0;
-  let cliques = p.cliques || 0;
-  let videos = p.videosGerados || 0;
-
-  let crescimento =
-      score * 0.6 +
-      cliques * 0.8;
-
-  let indice =
-      crescimento +
-      videos * 1.5;
-
-  return indice;
-
-}
-
-// =====================================
-// STATUS
-// =====================================
-
-function nivelAutomatico(p){
-
-  let v = viralidade(p);
-
-  if(v >= 15)
-    return "🔥 VIRAL";
-
-  if(v >= 8)
-    return "⚠️ EM ASCENSÃO";
-
-  return "❌ FRACO";
-
-}
-
-// =====================================
-// PLATAFORMA
-// =====================================
-
-function plataforma(score){
-
-  if(score >= 8)
-    return "📱 TikTok";
-
-  if(score >= 5)
-    return "📸 Reels";
-
-  return "⚡ Kwai";
-
-}
-
-// =====================================
-// DECISÃO
-// =====================================
-
-function decidir(p){
-
-  let v = viralidade(p);
-
-  if(v >= 15)
-    return "🚀 POSTAR AGORA";
-
-  if(v >= 8)
-    return "⚠️ TESTAR MAIS";
-
-  return "❌ IGNORAR";
-
-}
-
-// =====================================
-// PACOTE POSTAGEM
-// =====================================
-
-function pacote(p){
-
-return `
-📦 POSTAGEM PRONTA
-
-📌 ${p.titulo}
-💰 ${p.preco}
-
-🔥 OFERTA IMPERDÍVEL
-
-🚀 Link na bio
-
-#promo
-#oferta
-#desconto
-#achadinhos
-
-🔗 ${p.link}
-`;
-
-}
-
-// =====================================
-// COPIAR
-// =====================================
-
-function copiarPostagem(plataforma){
-
-  const texto = `
-🔥 OFERTA IMPERDÍVEL
-
-📦 Produto em alta
-🚀 Link na bio
-
-#promo #oferta #viral
-`;
-
-  navigator.clipboard.writeText(texto);
-
-  alert("📋 Copiado para " + plataforma);
-
-}
-
-// =====================================
-// IA
-// =====================================
-
-async function carregarIA(){
-
-  const snap = await db.collection("produtos").get();
-
-  let maior = 0;
-  let melhor = null;
-
-  snap.forEach(doc=>{
-
-    let p = doc.data();
-
-    let v = viralidade(p);
-
-    if(v > maior){
-
-      maior = v;
-      melhor = p;
-
-    }
-
-  });
-
-  if(melhor){
-
-    if(maior >= 15){
-
-      iaSugestao.innerHTML =
-      "🚀 ESCALAR IMEDIATAMENTE";
-
-    }
-    else if(maior >= 8){
-
-      iaSugestao.innerHTML =
-      "⚠️ EM CRESCIMENTO";
-
-    }
-    else{
-
-      iaSugestao.innerHTML =
-      "❌ DESCARTAR";
-
-    }
-
-  }
-
-}
-
-// =====================================
-// GRÁFICO
-// =====================================
-
-async function carregarGrafico(){
-
-  const snap =
-    await db.collection("produtos").get();
-
-  let labels = [];
-  let data = [];
-
-  snap.forEach(doc=>{
-
-    let p = doc.data();
-
-    labels.push(p.titulo);
-
-    data.push(
-      viralidade(p)
-    );
-
-  });
-
-  new Chart(
-    document.getElementById("grafico"),
-    {
-
-      type: "bar",
-
-      data: {
-
-        labels,
-
-        datasets: [{
-
-          label: "Índice Viral",
-
-          data
-
-        }]
-
-      }
-
-    }
-  );
-
-}
-
-// =====================================
-// OPERAÇÃO
-// =====================================
-
-async function carregarOperacao(){
-
-  operacao.innerHTML = "";
-
-  const snap =
-    await db.collection("produtos")
-    .orderBy("score","desc")
-    .limit(5)
-    .get();
-
-  snap.forEach(doc=>{
-
-    let p = doc.data();
-
-    operacao.innerHTML += `
-
-      <div class="produto">
-
-        <h3>${p.titulo}</h3>
-
-        <p>${decidir(p)}</p>
-
-        <p>
-        📈 Viralidade:
-        ${viralidade(p).toFixed(1)}
-        </p>
-
-        <p>
-        🏷️ ${nivelAutomatico(p)}
-        </p>
-
-        <p>
-        📱 Plataforma:
-        ${plataforma(p.score || 0)}
-        </p>
-
-        <button onclick="copiarPostagem('TikTok')">
-        📱 TikTok
-        </button>
-
-        <button onclick="copiarPostagem('Reels')">
-        📸 Reels
-        </button>
-
-        <button onclick="copiarPostagem('Kwai')">
-        ⚡ Kwai
-        </button>
-
-        <pre>${pacote(p)}</pre>
-
-      </div>
-
-    `;
-
-  });
-
-}
-
-// =====================================
-// PRODUTOS
-// =====================================
+</script>
+
+<!-- ===================================== -->
+<!-- SUBSTITUA SUA FUNÇÃO -->
+<!-- carregarProdutos() -->
+<!-- POR ESTA -->
+<!-- ===================================== -->
+
+<script>
 
 async function carregarProdutos(){
 
@@ -676,11 +122,43 @@ async function carregarProdutos(){
         🏷️ ${nivelAutomatico(p)}
         </p>
 
+        <p>
+        📱 Plataforma:
+        ${plataforma(p.score || 0)}
+        </p>
+
+        <p>
+        🏆 Estilo vencedor:
+        ${p.estiloVencedor || "Nenhum"}
+        </p>
+
+        <p>
+        🅰️ A:
+        ${p.clicksA || 0}
+
+        |
+
+        🅱️ B:
+        ${p.clicksB || 0}
+        </p>
+
         <span class="badge">
         ${plataforma(p.score || 0)}
         </span>
 
         <img src="${p.imagem}">
+
+        <br><br>
+
+        <button onclick="clickEstilo('${doc.id}','A')">
+        🔥 Vídeo A performou
+        </button>
+
+        <button onclick="clickEstilo('${doc.id}','B')">
+        ✨ Vídeo B performou
+        </button>
+
+        <br><br>
 
         <a href="${p.link}"
         target="_blank"
@@ -698,63 +176,5 @@ async function carregarProdutos(){
 
 }
 
-// =====================================
-// VENCEDORES
-// =====================================
-
-async function carregarVencedores(){
-
-  vencedores.innerHTML = "";
-
-  const snap =
-    await db.collection("produtos")
-    .orderBy("score","desc")
-    .limit(5)
-    .get();
-
-  snap.forEach(doc=>{
-
-    let p = doc.data();
-
-    vencedores.innerHTML += `
-
-      <div class="produto">
-
-        <h3>🔥 ${p.titulo}</h3>
-
-        <p>
-        📈 Viralidade:
-        ${viralidade(p).toFixed(1)}
-        </p>
-
-      </div>
-
-    `;
-
-  });
-
-}
-
-// =====================================
-// CARREGAR TUDO
-// =====================================
-
-async function carregarTudo(){
-
-  carregarProdutos();
-
-  carregarVencedores();
-
-  carregarGrafico();
-
-  carregarIA();
-
-  carregarOperacao();
-
-}
-
 </script>
-
-</body>
-</html>
 
