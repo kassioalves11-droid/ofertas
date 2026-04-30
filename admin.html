@@ -4,7 +4,7 @@
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Painel Admin IA</title>
+<title>Painel Admin Inteligente</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -22,7 +22,7 @@ body{
 }
 
 .container{
-  max-width:850px;
+  max-width:900px;
   margin:auto;
   background:#1e1e1e;
   padding:25px;
@@ -72,6 +72,10 @@ button{
 .btnExcluir{ background:#d50000; }
 .btnScore{ background:#2962ff; }
 
+a{
+  color:#00e676;
+}
+
 </style>
 
 </head>
@@ -93,7 +97,7 @@ button{
 <!-- PAINEL -->
 <div class="container" id="painel" style="display:none;">
 
-<h1>📊 Painel Inteligente</h1>
+<h1>🚀 Painel Inteligente de Afiliados</h1>
 
 <input id="titulo" placeholder="Título">
 <input id="preco" placeholder="Preço">
@@ -101,16 +105,19 @@ button{
 <input id="link" placeholder="Link afiliado">
 <input id="categoria" placeholder="Categoria">
 
-<textarea id="descricao" placeholder="Descrição"></textarea>
-
 <button onclick="salvarProduto()">Salvar Produto</button>
 <button onclick="logout()">Sair</button>
 
 <hr>
 
 <h2>📥 Importar CSV</h2>
-<input type="file" id="csvFile" accept=".csv">
-<button onclick="importarCSV()">Importar Produtos</button>
+<input type="file" id="csvFile">
+<button onclick="importarCSV()">Importar</button>
+
+<hr>
+
+<h2>🧠 IA (Sugestão automática)</h2>
+<p id="iaSugestao">Carregando...</p>
 
 <hr>
 
@@ -119,18 +126,13 @@ button{
 
 <hr>
 
-<h2>🏆 Vencedores do Dia</h2>
+<h2>🏆 Vencedores</h2>
 <div id="vencedores"></div>
 
 <hr>
 
 <h2>📦 Produtos</h2>
 <div id="listaProdutos"></div>
-
-<hr>
-
-<h2>🧠 IA SUGESTÃO</h2>
-<p id="iaSugestao">Carregando...</p>
 
 </div>
 
@@ -147,7 +149,6 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
-
 const db = firebase.firestore();
 
 // =====================================
@@ -159,20 +160,12 @@ function login(){
   firebase.auth()
   .signInWithEmailAndPassword(email.value, senha.value)
   .then(()=>{
-
     loginBox.style.display="none";
     painel.style.display="block";
-
     carregarTudo();
-
   })
-  .catch(e=>alert(e.message));
-
+  .catch(e=>alert("Erro login"));
 }
-
-// =====================================
-// LOGOUT
-// =====================================
 
 function logout(){
   firebase.auth().signOut();
@@ -180,7 +173,7 @@ function logout(){
 }
 
 // =====================================
-// AUTH
+// AUTENTICAÇÃO
 // =====================================
 
 firebase.auth().onAuthStateChanged(user=>{
@@ -192,29 +185,27 @@ firebase.auth().onAuthStateChanged(user=>{
 });
 
 // =====================================
-// SALVAR
+// SALVAR PRODUTO
 // =====================================
 
 async function salvarProduto(){
 
   await db.collection("produtos").add({
-
     titulo: titulo.value,
     preco: preco.value,
     imagem: imagem.value,
     link: link.value,
     categoria: categoria.value,
 
-    status: "novo",
     score: 0,
-    nivel: "medio",
+    cliques: 0,
     videosGerados: 0,
+    nivel: "medio",
+    status: "novo",
     createdAt: new Date()
-
   });
 
   carregarTudo();
-
 }
 
 // =====================================
@@ -224,7 +215,7 @@ async function salvarProduto(){
 async function importarCSV(){
 
   const file = csvFile.files[0];
-  if(!file){ alert("Selecione CSV"); return; }
+  if(!file) return;
 
   const text = await file.text();
   const linhas = text.split("\n");
@@ -238,24 +229,39 @@ async function importarCSV(){
     const d = l.split(",");
 
     await db.collection("produtos").add({
-
       titulo: d[0],
       preco: d[1],
       imagem: d[2],
       link: d[3],
       categoria: d[4] || "produto",
 
-      status: "novo",
       score: 0,
-      nivel: "medio",
+      cliques: 0,
       videosGerados: 0,
+      nivel: "medio",
+      status: "novo",
       createdAt: new Date()
-
     });
 
   }
 
   carregarTudo();
+}
+
+// =====================================
+// CLIQUE TRACKING
+// =====================================
+
+async function clicou(id){
+
+  const ref = db.collection("produtos").doc(id);
+  const doc = await ref.get();
+
+  let atual = doc.data().cliques || 0;
+
+  await ref.update({
+    cliques: atual + 1
+  });
 
 }
 
@@ -270,7 +276,6 @@ async function aumentarScore(id, atual){
   .update({ score: atual + 1 });
 
   carregarTudo();
-
 }
 
 // =====================================
@@ -278,12 +283,10 @@ async function aumentarScore(id, atual){
 // =====================================
 
 async function carregarTudo(){
-
   carregarProdutos();
   carregarVencedores();
   carregarGrafico();
   carregarIA();
-
 }
 
 // =====================================
@@ -307,17 +310,17 @@ async function carregarProdutos(){
 
         <h3>${p.titulo}</h3>
         <p>💰 ${p.preco}</p>
-        <p>⭐ Score: ${p.score||0}</p>
-        <p>🏆 ${p.nivel||"medio"}</p>
+        <p>⭐ Score: ${p.score || 0}</p>
+        <p>👆 Cliques: ${p.cliques || 0}</p>
 
         <img src="${p.imagem}">
 
-        <div class="acoes">
+        <a href="${p.link}" target="_blank"
+        onclick="clicou('${doc.id}')">
+          🔗 Abrir oferta
+        </a>
 
-          <button class="btnExcluir"
-          onclick="excluir('${doc.id}')">
-            Excluir
-          </button>
+        <div class="acoes">
 
           <button class="btnScore"
           onclick="aumentarScore('${doc.id}',${p.score||0})">
@@ -342,9 +345,8 @@ async function carregarVencedores(){
   vencedores.innerHTML = "";
 
   const snap = await db.collection("produtos")
-  .where("nivel","==","vencedor")
   .orderBy("score","desc")
-  .limit(10)
+  .limit(5)
   .get();
 
   snap.forEach(doc=>{
@@ -355,8 +357,8 @@ async function carregarVencedores(){
       <div class="produto">
 
         <h3>🔥 ${p.titulo}</h3>
-        <p>💰 ${p.preco}</p>
         <p>⭐ ${p.score}</p>
+        <p>👆 ${p.cliques || 0} cliques</p>
 
       </div>
     `;
@@ -377,12 +379,9 @@ async function carregarGrafico(){
   let data = [];
 
   snap.forEach(doc=>{
-
     let p = doc.data();
-
     labels.push(p.titulo);
-    data.push(p.score || 0);
-
+    data.push((p.score||0) + (p.cliques||0)*2);
   });
 
   new Chart(document.getElementById("grafico"), {
@@ -390,7 +389,7 @@ async function carregarGrafico(){
     data: {
       labels: labels,
       datasets: [{
-        label: "Score",
+        label: "Performance real",
         data: data
       }]
     }
@@ -399,43 +398,43 @@ async function carregarGrafico(){
 }
 
 // =====================================
-// IA SIMPLES
+// IA REAL
 // =====================================
 
 async function carregarIA(){
 
-  const snap = await db.collection("produtos")
-  .orderBy("score","desc")
-  .limit(1)
-  .get();
+  const snap = await db.collection("produtos").get();
+
+  let melhor = null;
+  let maior = 0;
 
   snap.forEach(doc=>{
 
     let p = doc.data();
 
-    if(p.score >= 5){
-      iaSugestao.innerHTML = "🚀 ESCALAR ESTE PRODUTO AGORA";
-    } else if(p.score >= 3){
-      iaSugestao.innerHTML = "⚠️ TESTAR MAIS ESTE PRODUTO";
-    } else {
-      iaSugestao.innerHTML = "❌ IGNORAR ESTE PRODUTO";
+    let score = p.score || 0;
+    let cliques = p.cliques || 0;
+
+    let valor = score + (cliques * 2);
+
+    if(valor > maior){
+      maior = valor;
+      melhor = p;
     }
 
   });
 
-}
+  if(melhor){
 
-// =====================================
-// EXCLUIR
-// =====================================
+    if(maior >= 10){
+      iaSugestao.innerHTML = "🚀 ESCALAR AGORA";
+    } else if(maior >= 5){
+      iaSugestao.innerHTML = "⚠️ EM TESTE";
+    } else {
+      iaSugestao.innerHTML = "❌ DESCARTAR";
+    }
 
-async function excluir(id){
-
-  await db.collection("produtos")
-  .doc(id)
-  .delete();
-
-  carregarTudo();
+  }
 
 }
 
@@ -443,4 +442,3 @@ async function excluir(id){
 
 </body>
 </html>
-
