@@ -4,7 +4,7 @@
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Painel IA Afiliados</title>
+<title>Painel IA Afiliados - Fase 2</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -63,12 +63,15 @@ button{
   margin-top:10px;
 }
 
-a{ color:#00e676; }
+a{
+  color:#00e676;
+}
 
 .badge{
-  padding:6px;
-  border-radius:6px;
   display:inline-block;
+  padding:5px 10px;
+  border-radius:6px;
+  background:#333;
   margin-top:5px;
 }
 
@@ -93,7 +96,7 @@ a{ color:#00e676; }
 <!-- PAINEL -->
 <div class="container" id="painel" style="display:none;">
 
-<h1>🚀 Painel IA de Afiliados</h1>
+<h1>🚀 Painel IA Afiliados - Fase 2</h1>
 
 <input id="titulo" placeholder="Título">
 <input id="preco" placeholder="Preço">
@@ -112,17 +115,17 @@ a{ color:#00e676; }
 
 <hr>
 
-<h2>🧠 IA de Decisão</h2>
-<p id="iaSugestao">Carregando...</p>
+<h2>🧠 IA de decisão</h2>
+<p id="iaSugestao"></p>
 
 <hr>
 
-<h2>📊 Gráfico</h2>
+<h2>📊 Gráfico de performance</h2>
 <canvas id="grafico"></canvas>
 
 <hr>
 
-<h2>📦 Modo Operação Diária</h2>
+<h2>📦 Modo Operação (o que postar hoje)</h2>
 <div id="operacao"></div>
 
 <hr>
@@ -166,16 +169,13 @@ function login(){
     carregarTudo();
   })
   .catch(()=>alert("Erro login"));
+
 }
 
 function logout(){
   firebase.auth().signOut();
   location.reload();
 }
-
-// =====================================
-// AUTH
-// =====================================
 
 firebase.auth().onAuthStateChanged(user=>{
   if(user){
@@ -200,7 +200,6 @@ async function salvarProduto(){
 
     score: 0,
     cliques: 0,
-    videosGerados: 0,
     nivel: "medio",
     status: "novo",
     createdAt: new Date()
@@ -238,7 +237,6 @@ async function importarCSV(){
 
       score: 0,
       cliques: 0,
-      videosGerados: 0,
       nivel: "medio",
       status: "novo",
       createdAt: new Date()
@@ -277,10 +275,22 @@ async function aumentarScore(id, atual){
   .update({ score: atual + 1 });
 
   carregarTudo();
+
 }
 
 // =====================================
-// DECISÃO IA
+// IA PLATAFORMA
+// =====================================
+
+function plataforma(score){
+
+  if(score >= 8) return "📱 TikTok (viral)";
+  if(score >= 5) return "📸 Reels (engajamento)";
+  return "⚡ Kwai (alcance rápido)";
+}
+
+// =====================================
+// DECISÃO
 // =====================================
 
 function decidir(p){
@@ -288,10 +298,10 @@ function decidir(p){
   let score = p.score || 0;
   let cliques = p.cliques || 0;
 
-  let valor = score + (cliques * 2);
+  let v = score + (cliques * 2);
 
-  if(valor >= 10) return "🚀 POSTAR AGORA";
-  if(valor >= 5) return "⚠️ POSTAR DEPOIS";
+  if(v >= 10) return "🚀 POSTAR AGORA";
+  if(v >= 5) return "⚠️ POSTAR DEPOIS";
   return "❌ IGNORAR";
 }
 
@@ -353,14 +363,16 @@ async function carregarProdutos(){
 
         <h3>${p.titulo}</h3>
         <p>💰 ${p.preco}</p>
-        <p>⭐ ${p.score}</p>
+        <p>⭐ ${p.score || 0}</p>
         <p>👆 ${p.cliques || 0}</p>
+
+        <span class="badge">${plataforma(p.score || 0)}</span>
 
         <img src="${p.imagem}">
 
         <a href="${p.link}" target="_blank"
         onclick="clicou('${doc.id}')">
-          Abrir oferta
+          🔗 Abrir oferta
         </a>
 
       </div>
@@ -423,7 +435,7 @@ async function carregarGrafico(){
     data: {
       labels,
       datasets: [{
-        label: "Performance",
+        label: "Performance real",
         data
       }]
     }
@@ -493,6 +505,8 @@ async function carregarOperacao(){
 
         <p>${decidir(p)}</p>
 
+        <p>📱 Plataforma: ${plataforma(p.score || 0)}</p>
+
         <pre>${pacote(p)}</pre>
 
       </div>
@@ -506,3 +520,4 @@ async function carregarOperacao(){
 
 </body>
 </html>
+
