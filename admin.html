@@ -4,7 +4,7 @@
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Painel Admin Inteligente</title>
+<title>Painel IA Afiliados</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -22,7 +22,7 @@ body{
 }
 
 .container{
-  max-width:900px;
+  max-width:950px;
   margin:auto;
   background:#1e1e1e;
   padding:25px;
@@ -63,17 +63,13 @@ button{
   margin-top:10px;
 }
 
-.acoes{
-  display:flex;
-  gap:10px;
-  margin-top:10px;
-}
+a{ color:#00e676; }
 
-.btnExcluir{ background:#d50000; }
-.btnScore{ background:#2962ff; }
-
-a{
-  color:#00e676;
+.badge{
+  padding:6px;
+  border-radius:6px;
+  display:inline-block;
+  margin-top:5px;
 }
 
 </style>
@@ -85,7 +81,7 @@ a{
 <!-- LOGIN -->
 <div class="container" id="loginBox">
 
-<h1>Login Admin IA</h1>
+<h1>Login IA Admin</h1>
 
 <input type="email" id="email" placeholder="Email">
 <input type="password" id="senha" placeholder="Senha">
@@ -97,7 +93,7 @@ a{
 <!-- PAINEL -->
 <div class="container" id="painel" style="display:none;">
 
-<h1>🚀 Painel Inteligente de Afiliados</h1>
+<h1>🚀 Painel IA de Afiliados</h1>
 
 <input id="titulo" placeholder="Título">
 <input id="preco" placeholder="Preço">
@@ -116,13 +112,18 @@ a{
 
 <hr>
 
-<h2>🧠 IA (Sugestão automática)</h2>
+<h2>🧠 IA de Decisão</h2>
 <p id="iaSugestao">Carregando...</p>
 
 <hr>
 
-<h2>📊 Gráfico de Performance</h2>
+<h2>📊 Gráfico</h2>
 <canvas id="grafico"></canvas>
+
+<hr>
+
+<h2>📦 Modo Operação Diária</h2>
+<div id="operacao"></div>
 
 <hr>
 
@@ -164,7 +165,7 @@ function login(){
     painel.style.display="block";
     carregarTudo();
   })
-  .catch(e=>alert("Erro login"));
+  .catch(()=>alert("Erro login"));
 }
 
 function logout(){
@@ -173,7 +174,7 @@ function logout(){
 }
 
 // =====================================
-// AUTENTICAÇÃO
+// AUTH
 // =====================================
 
 firebase.auth().onAuthStateChanged(user=>{
@@ -249,7 +250,7 @@ async function importarCSV(){
 }
 
 // =====================================
-// CLIQUE TRACKING
+// CLIQUES
 // =====================================
 
 async function clicou(id){
@@ -279,14 +280,56 @@ async function aumentarScore(id, atual){
 }
 
 // =====================================
+// DECISÃO IA
+// =====================================
+
+function decidir(p){
+
+  let score = p.score || 0;
+  let cliques = p.cliques || 0;
+
+  let valor = score + (cliques * 2);
+
+  if(valor >= 10) return "🚀 POSTAR AGORA";
+  if(valor >= 5) return "⚠️ POSTAR DEPOIS";
+  return "❌ IGNORAR";
+}
+
+// =====================================
+// PACOTE POSTAGEM
+// =====================================
+
+function pacote(p){
+
+  return `
+📦 POSTAGEM PRONTA
+
+📌 ${p.titulo}
+💰 ${p.preco}
+
+🔥 OFERTA IMPERDÍVEL
+${p.titulo}
+💰 R$ ${p.preco}
+
+🚀 link na bio
+#oferta #promo #achados
+
+🔗 ${p.link}
+`;
+}
+
+// =====================================
 // CARREGAR TUDO
 // =====================================
 
 async function carregarTudo(){
+
   carregarProdutos();
   carregarVencedores();
   carregarGrafico();
   carregarIA();
+  carregarOperacao();
+
 }
 
 // =====================================
@@ -310,24 +353,15 @@ async function carregarProdutos(){
 
         <h3>${p.titulo}</h3>
         <p>💰 ${p.preco}</p>
-        <p>⭐ Score: ${p.score || 0}</p>
-        <p>👆 Cliques: ${p.cliques || 0}</p>
+        <p>⭐ ${p.score}</p>
+        <p>👆 ${p.cliques || 0}</p>
 
         <img src="${p.imagem}">
 
         <a href="${p.link}" target="_blank"
         onclick="clicou('${doc.id}')">
-          🔗 Abrir oferta
+          Abrir oferta
         </a>
-
-        <div class="acoes">
-
-          <button class="btnScore"
-          onclick="aumentarScore('${doc.id}',${p.score||0})">
-            + Score
-          </button>
-
-        </div>
 
       </div>
     `;
@@ -355,11 +389,8 @@ async function carregarVencedores(){
 
     vencedores.innerHTML += `
       <div class="produto">
-
         <h3>🔥 ${p.titulo}</h3>
         <p>⭐ ${p.score}</p>
-        <p>👆 ${p.cliques || 0} cliques</p>
-
       </div>
     `;
 
@@ -379,18 +410,21 @@ async function carregarGrafico(){
   let data = [];
 
   snap.forEach(doc=>{
+
     let p = doc.data();
+
     labels.push(p.titulo);
     data.push((p.score||0) + (p.cliques||0)*2);
+
   });
 
   new Chart(document.getElementById("grafico"), {
     type: "bar",
     data: {
-      labels: labels,
+      labels,
       datasets: [{
-        label: "Performance real",
-        data: data
+        label: "Performance",
+        data
       }]
     }
   });
@@ -398,7 +432,7 @@ async function carregarGrafico(){
 }
 
 // =====================================
-// IA REAL
+// IA
 // =====================================
 
 async function carregarIA(){
@@ -412,13 +446,10 @@ async function carregarIA(){
 
     let p = doc.data();
 
-    let score = p.score || 0;
-    let cliques = p.cliques || 0;
+    let v = (p.score||0) + (p.cliques||0)*2;
 
-    let valor = score + (cliques * 2);
-
-    if(valor > maior){
-      maior = valor;
+    if(v > maior){
+      maior = v;
       melhor = p;
     }
 
@@ -429,12 +460,45 @@ async function carregarIA(){
     if(maior >= 10){
       iaSugestao.innerHTML = "🚀 ESCALAR AGORA";
     } else if(maior >= 5){
-      iaSugestao.innerHTML = "⚠️ EM TESTE";
+      iaSugestao.innerHTML = "⚠️ TESTAR";
     } else {
       iaSugestao.innerHTML = "❌ DESCARTAR";
     }
 
   }
+
+}
+
+// =====================================
+// MODO OPERAÇÃO
+// =====================================
+
+async function carregarOperacao(){
+
+  operacao.innerHTML = "";
+
+  const snap = await db.collection("produtos")
+  .orderBy("score","desc")
+  .limit(5)
+  .get();
+
+  snap.forEach(doc=>{
+
+    let p = doc.data();
+
+    operacao.innerHTML += `
+      <div class="produto">
+
+        <h3>${p.titulo}</h3>
+
+        <p>${decidir(p)}</p>
+
+        <pre>${pacote(p)}</pre>
+
+      </div>
+    `;
+
+  });
 
 }
 
