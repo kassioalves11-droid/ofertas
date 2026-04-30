@@ -4,11 +4,13 @@
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Painel Admin</title>
+<title>Painel Admin IA</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 
@@ -20,7 +22,7 @@ body{
 }
 
 .container{
-  max-width:750px;
+  max-width:850px;
   margin:auto;
   background:#1e1e1e;
   padding:25px;
@@ -67,13 +69,8 @@ button{
   margin-top:10px;
 }
 
-.btnExcluir{
-  background:#d50000;
-}
-
-.btnScore{
-  background:#2962ff;
-}
+.btnExcluir{ background:#d50000; }
+.btnScore{ background:#2962ff; }
 
 </style>
 
@@ -82,10 +79,9 @@ button{
 <body>
 
 <!-- LOGIN -->
-
 <div class="container" id="loginBox">
 
-<h1>Login Admin</h1>
+<h1>Login Admin IA</h1>
 
 <input type="email" id="email" placeholder="Email">
 <input type="password" id="senha" placeholder="Senha">
@@ -95,10 +91,9 @@ button{
 </div>
 
 <!-- PAINEL -->
-
 <div class="container" id="painel" style="display:none;">
 
-<h1>Painel Admin</h1>
+<h1>📊 Painel Inteligente</h1>
 
 <input id="titulo" placeholder="Título">
 <input id="preco" placeholder="Preço">
@@ -111,33 +106,31 @@ button{
 <button onclick="salvarProduto()">Salvar Produto</button>
 <button onclick="logout()">Sair</button>
 
-<div id="status"></div>
-
 <hr>
 
-<!-- CSV -->
-
 <h2>📥 Importar CSV</h2>
-
 <input type="file" id="csvFile" accept=".csv">
-
 <button onclick="importarCSV()">Importar Produtos</button>
 
 <hr>
 
-<!-- PRODUTOS -->
+<h2>📊 Gráfico de Performance</h2>
+<canvas id="grafico"></canvas>
 
-<h2>📊 Produtos (Ranking)</h2>
+<hr>
 
+<h2>🏆 Vencedores do Dia</h2>
+<div id="vencedores"></div>
+
+<hr>
+
+<h2>📦 Produtos</h2>
 <div id="listaProdutos"></div>
 
 <hr>
 
-<!-- DASHBOARD -->
-
-<h2>🏆 Vencedores do Dia</h2>
-
-<div id="vencedores"></div>
+<h2>🧠 IA SUGESTÃO</h2>
+<p id="iaSugestao">Carregando...</p>
 
 </div>
 
@@ -170,8 +163,7 @@ function login(){
     loginBox.style.display="none";
     painel.style.display="block";
 
-    carregarProdutos();
-    carregarVencedores();
+    carregarTudo();
 
   })
   .catch(e=>alert(e.message));
@@ -195,14 +187,12 @@ firebase.auth().onAuthStateChanged(user=>{
   if(user){
     loginBox.style.display="none";
     painel.style.display="block";
-
-    carregarProdutos();
-    carregarVencedores();
+    carregarTudo();
   }
 });
 
 // =====================================
-// SALVAR PRODUTO
+// SALVAR
 // =====================================
 
 async function salvarProduto(){
@@ -214,19 +204,16 @@ async function salvarProduto(){
     imagem: imagem.value,
     link: link.value,
     categoria: categoria.value,
-    descricao: descricao.value,
 
     status: "novo",
-    videosGerados: 0,
     score: 0,
     nivel: "medio",
+    videosGerados: 0,
     createdAt: new Date()
 
   });
 
-  status.innerHTML = "Produto salvo!";
-  carregarProdutos();
-  carregarVencedores();
+  carregarTudo();
 
 }
 
@@ -259,18 +246,16 @@ async function importarCSV(){
       categoria: d[4] || "produto",
 
       status: "novo",
-      videosGerados: 0,
       score: 0,
       nivel: "medio",
+      videosGerados: 0,
       createdAt: new Date()
 
     });
 
   }
 
-  alert("Importado!");
-  carregarProdutos();
-  carregarVencedores();
+  carregarTudo();
 
 }
 
@@ -282,12 +267,22 @@ async function aumentarScore(id, atual){
 
   await db.collection("produtos")
   .doc(id)
-  .update({
-    score: atual + 1
-  });
+  .update({ score: atual + 1 });
+
+  carregarTudo();
+
+}
+
+// =====================================
+// CARREGAR TUDO
+// =====================================
+
+async function carregarTudo(){
 
   carregarProdutos();
   carregarVencedores();
+  carregarGrafico();
+  carregarIA();
 
 }
 
@@ -308,13 +303,9 @@ async function carregarProdutos(){
     let p = doc.data();
 
     listaProdutos.innerHTML += `
-      <div class="produto"
-      style="border-left:5px solid ${
-        (p.score||0)>=5 ? '#00e676' : '#444'
-      }">
+      <div class="produto">
 
         <h3>${p.titulo}</h3>
-
         <p>💰 ${p.preco}</p>
         <p>⭐ Score: ${p.score||0}</p>
         <p>🏆 ${p.nivel||"medio"}</p>
@@ -361,16 +352,74 @@ async function carregarVencedores(){
     let p = doc.data();
 
     vencedores.innerHTML += `
-      <div class="produto"
-      style="border-left:5px solid #00e676">
+      <div class="produto">
 
         <h3>🔥 ${p.titulo}</h3>
         <p>💰 ${p.preco}</p>
         <p>⭐ ${p.score}</p>
-        <p>🏆 VENCEDOR</p>
 
       </div>
     `;
+
+  });
+
+}
+
+// =====================================
+// GRÁFICO
+// =====================================
+
+async function carregarGrafico(){
+
+  const snap = await db.collection("produtos").get();
+
+  let labels = [];
+  let data = [];
+
+  snap.forEach(doc=>{
+
+    let p = doc.data();
+
+    labels.push(p.titulo);
+    data.push(p.score || 0);
+
+  });
+
+  new Chart(document.getElementById("grafico"), {
+    type: "bar",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: "Score",
+        data: data
+      }]
+    }
+  });
+
+}
+
+// =====================================
+// IA SIMPLES
+// =====================================
+
+async function carregarIA(){
+
+  const snap = await db.collection("produtos")
+  .orderBy("score","desc")
+  .limit(1)
+  .get();
+
+  snap.forEach(doc=>{
+
+    let p = doc.data();
+
+    if(p.score >= 5){
+      iaSugestao.innerHTML = "🚀 ESCALAR ESTE PRODUTO AGORA";
+    } else if(p.score >= 3){
+      iaSugestao.innerHTML = "⚠️ TESTAR MAIS ESTE PRODUTO";
+    } else {
+      iaSugestao.innerHTML = "❌ IGNORAR ESTE PRODUTO";
+    }
 
   });
 
@@ -386,8 +435,7 @@ async function excluir(id){
   .doc(id)
   .delete();
 
-  carregarProdutos();
-  carregarVencedores();
+  carregarTudo();
 
 }
 
@@ -395,3 +443,4 @@ async function excluir(id){
 
 </body>
 </html>
+
