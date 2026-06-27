@@ -1,0 +1,32 @@
+PROJETO APP AFILIADOS - VERSÃO FINAL ORGANIZADA
+
+PARA PUBLICAR NO GITHUB PAGES:
+1. Suba estes arquivos/pastas para o repositório ofertas:
+   - index.html
+   - pagina.html
+   - painel-produtos.html
+   - css/
+   - js/
+   - videos/
+
+2. Link da vitrine:
+   https://kassioalves11-droid.github.io/ofertas/
+
+3. Link do painel:
+   https://kassioalves11-droid.github.io/ofertas/painel-produtos.html
+
+IMPORTANTE:
+- Arquivos firebase-key.json / service account NÃO foram incluídos por segurança.
+- Para rodar auto.py localmente, coloque seu firebase-key.json original na pasta do projeto.
+- Fontes .ttf também foram removidas da pasta final.
+- Se a página não atualizar no navegador, use Ctrl + F5.
+
+ARQUIVOS PRINCIPAIS:
+- index.html: vitrine pública final
+- pagina.html: cópia da vitrine final
+- painel-produtos.html: painel admin
+- css/admin.css: visual do painel
+- js/painel-produtos.js: lógica do painel
+- js/firebase-config.js: Firebase Web
+- auto.py: automação local
+- video_generator.py: gerador de vídeo com selo limpo

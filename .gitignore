@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.pyc
+
+# Firebase privado - NUNCA subir
+firebase-key.json
+firebase key.json
+LOCAL_PRIVADO_NAO_SUBIR/
+
+# Temporarios
+temp/
+saida/
+*.tmp
+temp_*
+*.log
+
+# Testes
+teste*.mp4
+viral_*.mp4
+
+# Backups antigos
+*-backup.*
+*backup*
+* - Copia*
+* - Cópia*
+
+# Sistema
+Thumbs.db
+.DS_Store
+
+# Musicas locais: deixe comentado se quiser publicar musicas
+# musicas/

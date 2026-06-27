@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Painel de Produtos</title>
+
+  <link rel="stylesheet" href="css/admin.css?v=final">
+
+    <script type="module" src="js/firebase-config.js"></script>
+    <script type="module" src="js/painel-produtos.js"></script>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>Painel de Produtos</h1>
+
+        <!-- DASHBOARD -->
+
+        <div class="dashboard">
+
+            <div class="dash-card">
+                <h3>Total</h3>
+                <span id="dash-total">0</span>
+            </div>
+
+            <div class="dash-card">
+                <h3>Fila</h3>
+                <span id="dash-fila">0</span>
+            </div>
+
+            <div class="dash-card">
+                <h3>Gerando</h3>
+                <span id="dash-gerando">0</span>
+            </div>
+
+            <div class="dash-card">
+                <h3>Prontos</h3>
+                <span id="dash-prontos">0</span>
+            </div>
+
+            <div class="dash-card">
+                <h3>Erro</h3>
+                <span id="dash-erro">0</span>
+            </div>
+
+        </div>
+
+        <!-- ANALYTICS VISUAL -->
+
+        <div class="analytics-section">
+
+            <div class="analytics-card viral">
+                <h3>🔥 Score Médio</h3>
+                <span id="analytics-score">0%</span>
+            </div>
+
+            <div class="analytics-card top">
+                <h3>🏆 Categoria Top</h3>
+                <span id="analytics-categoria">---</span>
+            </div>
+
+            <div class="analytics-card videos">
+                <h3>🎬 Vídeos Gerados</h3>
+                <span id="analytics-videos">0</span>
+            </div>
+
+            <div class="analytics-card viralizados">
+                <h3>🚀 Produtos Virais</h3>
+                <span id="analytics-virais">0</span>
+            </div>
+
+        </div>
+
+        <!-- TOP PRODUTOS -->
+
+        <div class="card ranking-card">
+            <h2>🔥 Ranking Produtos Virais</h2>
+            <div id="ranking-produtos"></div>
+        </div>
+
+        <!-- FORM -->
+
+        <div class="card">
+
+            <h2>Novo Produto</h2>
+
+            <input type="text" id="titulo-produto" placeholder="Título">
+            <input type="text" id="preco-produto" placeholder="Preço">
+            <input type="text" id="categoria-produto" placeholder="Categoria">
+            <input type="text" id="link-produto" placeholder="Link do Produto">
+
+            <input type="text" id="imagem-produto" placeholder="Imagem Principal">
+            <input type="text" id="imagem2-produto" placeholder="Imagem 2">
+            <input type="text" id="imagem3-produto" placeholder="Imagem 3">
+            <input type="text" id="imagem4-produto" placeholder="Imagem 4">
+
+            <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:18px;">
+                <img id="preview-imagem" style="width:150px;height:150px;object-fit:cover;border-radius:12px;display:none;">
+                <img id="preview-imagem2" style="width:150px;height:150px;object-fit:cover;border-radius:12px;display:none;">
+                <img id="preview-imagem3" style="width:150px;height:150px;object-fit:cover;border-radius:12px;display:none;">
+                <img id="preview-imagem4" style="width:150px;height:150px;object-fit:cover;border-radius:12px;display:none;">
+            </div>
+
+            <div style="display:flex;gap:12px;margin-top:20px;flex-wrap:wrap;">
+
+                <button id="btn-capturar-link" style="background:linear-gradient(135deg,#ff6b35,#ff3d00);color:white;border:none;padding:14px 22px;border-radius:12px;font-weight:bold;cursor:pointer;transition:0.25s;box-shadow:0 4px 16px rgba(255,107,53,0.35);">
+                    🔗 Colar Link Produto
+                </button>
+
+                <button id="btn-salvar">Salvar Produto</button>
+
+                <button id="btn-limpar" style="background:#ef4444;color:white;">
+                    🧹 Limpar Cadastro
+                </button>
+
+                <button id="btn-auto">Gerar Vídeos Automático</button>
+
+            </div>
+
+        </div>
+
+        <!-- ASSISTENTE MARKETING -->
+
+        <div class="card">
+
+            <h2>🧠 Assistente Marketing</h2>
+
+            <button id="btn-gerar-copy" style="background:linear-gradient(135deg,#7c3aed,#5b21b6);color:white;border:none;padding:14px 22px;border-radius:12px;font-weight:bold;cursor:pointer;margin-bottom:18px;box-shadow:0 4px 18px rgba(124,58,237,0.35);">
+                ✨ Gerar Copy
+            </button>
+
+            <textarea id="copy-hook" placeholder="Hook do vídeo..." rows="3" style="width:100%;margin-top:12px;padding:14px;border-radius:12px;border:1px solid #30363d;background:#161b22;color:white;resize:vertical;min-height:80px;font-size:14px;"></textarea>
+
+            <textarea id="copy-legenda" placeholder="Legenda curta..." rows="5" style="width:100%;margin-top:12px;padding:14px;border-radius:12px;border:1px solid #30363d;background:#161b22;color:white;resize:vertical;min-height:110px;font-size:14px;"></textarea>
+
+            <textarea id="copy-cta" placeholder="CTA para bio..." rows="3" style="width:100%;margin-top:12px;padding:14px;border-radius:12px;border:1px solid #30363d;background:#161b22;color:white;resize:vertical;min-height:80px;font-size:14px;"></textarea>
+
+            <textarea id="copy-hashtags" placeholder="Hashtags..." rows="3" style="width:100%;margin-top:12px;padding:14px;border-radius:12px;border:1px solid #30363d;background:#161b22;color:white;resize:vertical;min-height:80px;font-size:14px;"></textarea>
+
+            <textarea id="copy-botao" placeholder="Texto do botão da vitrine..." rows="2" style="width:100%;margin-top:12px;padding:14px;border-radius:12px;border:1px solid #30363d;background:#161b22;color:white;resize:vertical;min-height:70px;font-size:14px;"></textarea>
+
+            <textarea id="copy-cena" placeholder="Sugestão de cena..." rows="3" style="width:100%;margin-top:12px;padding:14px;border-radius:12px;border:1px solid #30363d;background:#161b22;color:white;resize:vertical;min-height:80px;font-size:14px;"></textarea>
+
+        </div>
+
+        <!-- FILTROS -->
+
+        <div class="card">
+
+            <h2>Filtros</h2>
+
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <button class="filtro-btn" data-status="todos">Todos</button>
+                <button class="filtro-btn" data-status="novo">Novos</button>
+                <button class="filtro-btn" data-status="fila_video">Fila</button>
+                <button class="filtro-btn" data-status="gerando_video">Gerando</button>
+                <button class="filtro-btn" data-status="video_pronto">Prontos</button>
+                <button class="filtro-btn" data-status="erro">Erro</button>
+            </div>
+
+        </div>
+
+        <div class="card">
+            <input type="text" id="busca-produto" placeholder="Buscar produto...">
+        </div>
+
+        <div class="card">
+            <h2>Logs</h2>
+            <div id="logs"></div>
+        </div>
+
+        <div id="produtos" class="produtos-grid"></div>
+
+    </div>
+
+</body>
+
+</html>
